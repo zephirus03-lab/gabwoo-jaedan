@@ -1114,11 +1114,13 @@ async function handleApprove(email) {
   await sb.from('signup_requests').update({ status: 'approved' }).eq('email', email);
   await sb.from('approved_users').insert({ email: email });
   loadPendingRequests();
+  checkPendingBadge();
 }
 
 async function handleReject(email) {
   await sb.from('signup_requests').update({ status: 'rejected' }).eq('email', email);
   loadPendingRequests();
+  checkPendingBadge();
 }
 
 async function checkApproval(email) {
@@ -1212,7 +1214,16 @@ async function enterApp() {
   if (isAdmin) {
     document.getElementById('adminSection').style.display = 'block';
     document.getElementById('btnUserMgmt').style.display = 'inline-block';
+    checkPendingBadge();
   }
+}
+
+async function checkPendingBadge() {
+  var res = await sb.from('signup_requests').select('email', { count: 'exact' }).eq('status', 'pending');
+  var btn = document.getElementById('btnUserMgmt');
+  var count = res.data ? res.data.length : 0;
+  btn.textContent = count > 0 ? '사용자 관리 NEW' : '사용자 관리';
+  btn.style.background = count > 0 ? '#c62828' : '';
 }
 
 function openUserMgmt() {
