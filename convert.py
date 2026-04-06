@@ -190,50 +190,57 @@ def main():
     current_items = parse_section(ws, sections[latest_idx][0], section_end(latest_idx), ws_fmt)
     print(f"  최신 섹션: {latest_date} → 진행 중 {len(current_items)}건")
 
-    # 최근 1주일 완료 건 추출: 연쇄 비교
-    # latest부터 역순으로 7개 섹션을 비교
-    LOOKBACK = 7  # 최대 7개 섹션 비교
-    compare_count = min(LOOKBACK, latest_idx)
-
-    completed_items = []
+    # 완료 건 추출: 전체 섹션 연쇄 비교
     current_keys = {(i["client"], i["product"]) for i in current_items}
-    seen_completed = set()  # 중복 방지
 
-    for step in range(compare_count):
-        newer_idx = latest_idx - step
-        older_idx = newer_idx - 1
-        if older_idx < 0:
+    def extract_completed(max_steps):
+        """latest부터 역순으로 max_steps개 섹션을 비교하여 완료 건 추출"""
+        items = []
+        seen = set()
+        for step in range(min(max_steps, latest_idx)):
+            newer_idx = latest_idx - step
+            older_idx = newer_idx - 1
+            if older_idx < 0:
+                break
+
+            newer_date = sections[newer_idx][1].strftime("%Y-%m-%d")
+            older_date = sections[older_idx][1].strftime("%Y-%m-%d")
+
+            older_items = parse_section(ws, sections[older_idx][0], section_end(older_idx))
+            newer_items_parsed = parse_section(ws, sections[newer_idx][0], section_end(newer_idx))
+            newer_keys = {(i["client"], i["product"]) for i in newer_items_parsed}
+
+            for item in older_items:
+                key = (item["client"], item["product"])
+                if key not in newer_keys and key not in current_keys and key not in seen:
+                    item["completed_between"] = f"{older_date} → {newer_date}"
+                    item["completed_date"] = newer_date
+                    items.append(item)
+                    seen.add(key)
+        return items
+
+    # 최근 10일 완료: 날짜 기준으로 10일 이내 섹션만
+    latest_dt = sections[latest_idx][1]
+    lookback_10d = 0
+    for step in range(latest_idx):
+        idx = latest_idx - step - 1
+        if idx < 0:
             break
+        delta = (latest_dt - sections[idx][1]).days
+        if delta > 10:
+            break
+        lookback_10d = step + 1
 
-        newer_date = sections[newer_idx][1].strftime("%Y-%m-%d")
-        older_date = sections[older_idx][1].strftime("%Y-%m-%d")
+    recent_completed = extract_completed(lookback_10d)
+    recent_completed.sort(key=lambda x: x["client"])
+    recent_completed.sort(key=lambda x: x["completed_date"], reverse=True)
+    print(f"  최근 10일 완료: {len(recent_completed)}건 ({lookback_10d}개 섹션 비교)")
 
-        older_items = parse_section(ws, sections[older_idx][0], section_end(older_idx))
-        newer_items_parsed = parse_section(ws, sections[newer_idx][0], section_end(newer_idx))
-        newer_keys = {(i["client"], i["product"]) for i in newer_items_parsed}
-
-        step_completed = 0
-        for item in older_items:
-            key = (item["client"], item["product"])
-            # older에 있었는데 newer에 없고, 현재(latest)에도 없는 건 = 확실히 완료
-            if key not in newer_keys and key not in current_keys and key not in seen_completed:
-                item["completed_between"] = f"{older_date} → {newer_date}"
-                item["completed_date"] = newer_date
-                completed_items.append(item)
-                seen_completed.add(key)
-                step_completed += 1
-
-        if step_completed > 0:
-            print(f"  {older_date} → {newer_date}: {step_completed}건 완료")
-
-    # 완료 건을 날짜 역순 → 거래처순 정렬
-    completed_items.sort(key=lambda x: (-x["completed_date"].replace("-", "").rjust(10, "0").__hash__(),
-                                         x["completed_date"], x["client"], x["product"]))
-    # 더 단순한 정렬: 완료일 역순, 같은 날이면 거래처순
-    completed_items.sort(key=lambda x: x["client"])
-    completed_items.sort(key=lambda x: x["completed_date"], reverse=True)
-
-    print(f"  총 완료: {len(completed_items)}건 (최근 {compare_count}개 섹션 비교)")
+    # 전체 완료 (2026년): 모든 섹션 비교
+    all_completed = extract_completed(latest_idx)
+    all_completed.sort(key=lambda x: x["client"])
+    all_completed.sort(key=lambda x: x["completed_date"], reverse=True)
+    print(f"  전체 완료(2026년): {len(all_completed)}건 ({latest_idx}개 섹션 비교)")
 
     # 금일 작업 / 작업 대기 분리
     today_work = [i for i in current_items if i["is_today_work"]]
@@ -248,34 +255,35 @@ def main():
         c = item["client"]
         clients_all[c] = clients_all.get(c, 0) + 1
 
-    clients_completed = {}
-    for item in completed_items:
-        c = item["client"]
-        clients_completed[c] = clients_completed.get(c, 0) + 1
-
     # 완료 건의 날짜별 건수
-    completed_by_date = {}
-    for item in completed_items:
+    recent_by_date = {}
+    for item in recent_completed:
         d = item["completed_date"]
-        completed_by_date[d] = completed_by_date.get(d, 0) + 1
+        recent_by_date[d] = recent_by_date.get(d, 0) + 1
+
+    all_by_date = {}
+    for item in all_completed:
+        d = item["completed_date"]
+        all_by_date[d] = all_by_date.get(d, 0) + 1
 
     # JSON 구성
     output = {
         "updated_at": latest_date,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "lookback_sections": compare_count,
         "summary": {
             "today_work": len(today_work),
             "waiting": len(waiting),
-            "completed": len(completed_items),
+            "recent_completed": len(recent_completed),
+            "all_completed": len(all_completed),
             "total_clients": len(clients_all),
             "clients_in_progress": dict(sorted(clients_all.items(), key=lambda x: -x[1])),
-            "clients_completed": dict(sorted(clients_completed.items(), key=lambda x: -x[1])),
-            "completed_by_date": dict(sorted(completed_by_date.items(), reverse=True)),
+            "recent_completed_by_date": dict(sorted(recent_by_date.items(), reverse=True)),
+            "all_completed_by_date": dict(sorted(all_by_date.items(), reverse=True)),
         },
         "today_work": today_work,
         "waiting": waiting,
-        "completed": completed_items,
+        "recent_completed": recent_completed,
+        "all_completed": all_completed,
     }
 
     output_path = "web/data.json"
@@ -283,13 +291,9 @@ def main():
         json.dump(output, f, ensure_ascii=False, indent=2)
 
     print(f"\n변환 완료: {output_path}")
-    print(f"  금일 작업: {len(today_work)}건, 대기: {len(waiting)}건, 완료: {len(completed_items)}건")
+    print(f"  금일 작업 예정: {len(today_work)}건, 대기: {len(waiting)}건")
+    print(f"  최근 10일 완료: {len(recent_completed)}건, 전체 완료: {len(all_completed)}건")
     print(f"  거래처: {len(clients_all)}개")
-
-    if completed_by_date:
-        print(f"\n완료 날짜별:")
-        for d, cnt in sorted(completed_by_date.items(), reverse=True):
-            print(f"  {d}: {cnt}건")
 
 
 if __name__ == "__main__":

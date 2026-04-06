@@ -9,7 +9,13 @@
       "Bash(gh auth:*)",
       "Bash(brew install:*)",
       "Bash(gh repo:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git rm:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(supabase --version)",
+      "Bash(supabase login:*)"
     ]
   }
 }

@@ -8,206 +8,616 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-  background: #f5f5f5;
-  color: #333;
+  background: #f0f2f5;
+  color: #1a1a2e;
   -webkit-font-smoothing: antialiased;
 }
 
+/* ─── 레이아웃 최대 너비 ─── */
+#mainApp {
+  max-width: 640px;
+  margin: 0 auto;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+/* ─── 헤더 ─── */
 .header {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: white;
-  padding: 16px;
+  padding: 0 16px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
-.header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.header .date { font-size: 12px; color: #aaa; }
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 10px;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-logo {
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+.header-subtitle {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+.auth-logout {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.auth-logout:active { background: rgba(255,255,255,0.2); }
+.header-date-bar {
+  padding: 0 0 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+}
 
-/* 대시보드 */
-.dashboard { padding: 16px; }
+/* ─── 대시보드 ─── */
+.dashboard { padding: 16px 16px 8px; }
 .dashboard-title {
-  font-size: 13px; font-weight: 700; color: #888;
-  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
 }
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .stat-card {
-  background: white; border-radius: 12px; padding: 14px 10px;
-  text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  background: white;
+  border-radius: 14px;
+  padding: 14px 10px 12px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
   user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e0e0e0;
+  border-radius: 14px 14px 0 0;
 }
 .stat-card:active { transform: scale(0.96); }
 .stat-card.selected {
-  box-shadow: 0 0 0 2px #1a1a2e, 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 0 0 2px #1a1a2e, 0 4px 12px rgba(0,0,0,0.15);
 }
-.stat-card .number { font-size: 26px; font-weight: 800; color: #1a1a2e; }
-.stat-card .label { font-size: 11px; color: #888; margin-top: 3px; }
+.stat-card .stat-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+  display: block;
+  line-height: 1;
+}
+.stat-card .number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.stat-card .label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+/* 카드 색상 변형 */
+.stat-card.today::before { background: #1565c0; }
 .stat-card.today .number { color: #1565c0; }
-.stat-card.today.selected { box-shadow: 0 0 0 2px #1565c0, 0 2px 8px rgba(21,101,192,0.2); }
+.stat-card.today.selected { box-shadow: 0 0 0 2px #1565c0, 0 4px 12px rgba(21,101,192,0.2); }
+
+.stat-card.warn::before { background: #e65100; }
 .stat-card.warn .number { color: #e65100; }
-.stat-card.warn.selected { box-shadow: 0 0 0 2px #e65100, 0 2px 8px rgba(230,81,0,0.2); }
+.stat-card.warn.selected { box-shadow: 0 0 0 2px #e65100, 0 4px 12px rgba(230,81,0,0.2); }
+
+.stat-card.done::before { background: #2e7d32; }
 .stat-card.done .number { color: #2e7d32; }
-.stat-card.done.selected { box-shadow: 0 0 0 2px #2e7d32, 0 2px 8px rgba(46,125,50,0.2); }
+.stat-card.done.selected { box-shadow: 0 0 0 2px #2e7d32, 0 4px 12px rgba(46,125,50,0.2); }
+
+.stat-card.data-ready::before { background: #1565c0; }
 .stat-card.data-ready .number { color: #1565c0; }
-.stat-card.data-ready.selected { box-shadow: 0 0 0 2px #1565c0, 0 2px 8px rgba(21,101,192,0.2); }
+.stat-card.data-ready.selected { box-shadow: 0 0 0 2px #1565c0, 0 4px 12px rgba(21,101,192,0.2); }
 
-/* 차트 */
-.client-chart {
-  background: white; border-radius: 12px; padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-.chart-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 10px; }
-.chart-bar-wrap { margin-bottom: 6px; }
-.chart-bar-label {
-  display: flex; justify-content: space-between;
-  font-size: 12px; color: #555; margin-bottom: 3px;
-}
-.chart-bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
-.chart-bar-fill { height: 100%; background: #1a1a2e; border-radius: 4px; }
-
-/* 필터 안내 */
+/* ─── 필터 안내 ─── */
 .filter-banner {
-  margin: 12px 16px 0;
-  background: #fff3e0;
-  border: 1px solid #ffe0b2;
+  margin: 8px 16px 0;
+  background: #fff8f3;
+  border: 1px solid #ffd4b2;
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 13px;
-  color: #e65100;
+  font-weight: 600;
+  color: #c05000;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .filter-banner .clear-btn {
-  background: #e65100; color: white; border: none;
-  padding: 4px 12px; border-radius: 6px; font-size: 12px;
-  cursor: pointer; font-weight: 600;
+  background: #e65100;
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-/* 검색 */
-.search-wrap { padding: 16px 16px 8px; }
+/* ─── 검색 ─── */
+.search-wrap { padding: 14px 16px 6px; }
 .search-input {
-  width: 100%; padding: 14px 16px;
-  border: 2px solid #e0e0e0; border-radius: 12px;
-  font-size: 16px; outline: none; background: white;
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #dde1e7;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: border-color 0.15s;
 }
 .search-input:focus { border-color: #1a1a2e; }
-.search-input::placeholder { color: #bbb; }
-.search-status-hint { padding: 6px 16px 0; font-size: 12px; color: #888; }
+.search-input::placeholder { color: #b0b7c3; }
+.search-status-hint {
+  padding: 6px 16px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
 
-/* 탭 */
-.tab-bar { display: flex; padding: 8px 16px; gap: 6px; }
+/* ─── 탭 ─── */
+.tab-bar { display: flex; padding: 8px 16px 4px; gap: 6px; }
 .tab-btn {
-  flex: 1; padding: 10px 4px;
-  border: 2px solid #e0e0e0; border-radius: 10px;
-  background: white; font-size: 13px; font-weight: 600;
-  color: #888; text-align: center; cursor: pointer; user-select: none;
+  flex: 1;
+  padding: 9px 4px;
+  border: 1.5px solid #dde1e7;
+  border-radius: 10px;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
 }
 .tab-btn.active { border-color: #1a1a2e; color: #1a1a2e; background: #f0f0ff; }
-.tab-btn.active-today { border-color: #1565c0; color: #1565c0; background: #e3f2fd; }
+.tab-btn.active-today { border-color: #1565c0; color: #1565c0; background: #e8f2ff; }
 .tab-btn.active-done { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
-.tab-count { font-size: 11px; font-weight: 400; display: block; margin-top: 2px; color: #aaa; }
+.tab-count {
+  font-size: 11px;
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+  color: #9ca3af;
+}
 .tab-btn.active .tab-count { color: #1a1a2e; }
 .tab-btn.active-today .tab-count { color: #1565c0; }
 .tab-btn.active-done .tab-count { color: #2e7d32; }
 
-/* 날짜 구분 */
+/* ─── 날짜 구분 ─── */
 .date-divider {
-  padding: 10px 0 6px; font-size: 13px; font-weight: 700; color: #888;
-  display: flex; justify-content: space-between;
+  padding: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  display: flex;
+  justify-content: space-between;
 }
-.date-divider .date-count { font-weight: 400; font-size: 12px; color: #aaa; }
+.date-divider .date-count {
+  font-weight: 500;
+  font-size: 12px;
+  color: #9ca3af;
+}
 
-/* 거래처 그룹 */
-.client-list { padding: 0 16px 100px; }
-.client-group { margin-bottom: 16px; }
+/* ─── 거래처 그룹 ─── */
+.client-list { padding: 4px 16px 100px; }
+.client-group { margin-bottom: 14px; }
 .client-header {
-  color: white; padding: 12px 16px;
-  border-radius: 12px 12px 0 0; font-size: 15px; font-weight: 700;
-  display: flex; justify-content: space-between; align-items: center;
-  cursor: pointer; user-select: none;
+  color: white;
+  padding: 11px 16px;
+  border-radius: 12px 12px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
 }
-.client-header.header-today { background: #1565c0; }
-.client-header.header-waiting { background: #1a1a2e; }
-.client-header.header-done { background: #4a4a5e; }
+.client-header.header-today { background: linear-gradient(90deg, #1565c0 0%, #1976d2 100%); }
+.client-header.header-waiting { background: linear-gradient(90deg, #1a1a2e 0%, #24244a 100%); }
+.client-header.header-done { background: linear-gradient(90deg, #4a5568 0%, #5a6480 100%); }
 .client-header .count {
-  background: rgba(255,255,255,0.2); padding: 2px 10px;
-  border-radius: 10px; font-size: 13px; font-weight: 500;
+  background: rgba(255,255,255,0.2);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
 .client-items {
-  background: white; border-radius: 0 0 12px 12px;
-  overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  background: white;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
 }
 .client-items.collapsed { display: none; }
 
-.item-card { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
-.item-card:last-child { border-bottom: none; }
-.item-card.completed-item { opacity: 0.7; }
-.item-product { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; line-height: 1.4; }
-.item-details { display: flex; flex-wrap: wrap; gap: 6px; }
-.item-tag {
-  font-size: 11px; padding: 3px 8px; border-radius: 6px;
-  background: #f0f0f0; color: #555; white-space: nowrap;
+.item-card {
+  padding: 13px 16px;
+  border-bottom: 1px solid #f3f4f6;
 }
-.item-tag.tag-today { background: #e3f2fd; color: #1565c0; font-weight: 600; }
-.item-tag.tag-waiting { background: #f5f5f5; color: #888; }
-.item-tag.tag-done { background: #e0e0e0; color: #616161; }
-.item-tag.status-data-done { background: #e8f5e9; color: #2e7d32; }
-.item-tag.status-data-wait { background: #fff3e0; color: #e65100; }
-.item-tag.deadline { background: #e3f2fd; color: #1565c0; }
-.item-tag.deadline-urgent { background: #ffebee; color: #c62828; font-weight: 600; }
-.item-tag.equipment { background: #f3e5f5; color: #6a1b9a; }
+.item-card:last-child { border-bottom: none; }
+.item-card.completed-item { opacity: 0.65; }
+.item-product {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.item-details { display: flex; flex-wrap: wrap; gap: 5px; }
+.item-tag {
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #4b5563;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.item-tag.tag-today { background: #dbeafe; color: #1565c0; font-weight: 700; }
+.item-tag.tag-waiting { background: #f3f4f6; color: #6b7280; }
+.item-tag.tag-done { background: #e5e7eb; color: #6b7280; }
+.item-tag.status-data-done { background: #dcfce7; color: #166534; font-weight: 600; }
+.item-tag.status-data-wait { background: #fff7ed; color: #c05000; font-weight: 600; }
+.item-tag.deadline { background: #dbeafe; color: #1565c0; }
+.item-tag.deadline-urgent { background: #fee2e2; color: #b91c1c; font-weight: 700; }
+.item-tag.equipment { background: #f3e8ff; color: #7c3aed; }
 
-.no-result { text-align: center; padding: 60px 20px; color: #999; }
-.no-result .icon { font-size: 48px; margin-bottom: 12px; }
+.no-result { text-align: center; padding: 60px 20px; color: #9ca3af; }
+.no-result .icon { font-size: 40px; margin-bottom: 12px; }
 .no-result .text { font-size: 15px; }
-.loading { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+.loading { text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 15px; }
+
+/* ─── 로그인 화면 ─── */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 24px;
+}
+.auth-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-brand-logo {
+  width: 64px;
+  height: 64px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.auth-brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.3px;
+}
+.auth-brand-tagline {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+.auth-box {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.auth-box-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+.auth-field {
+  margin-bottom: 14px;
+}
+.auth-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+.auth-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #dde1e7;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+  color: #1a1a2e;
+}
+.auth-field input:focus { border-color: #1565c0; }
+.auth-field input::placeholder { color: #b0b7c3; }
+.auth-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #1565c0 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+  transition: opacity 0.15s;
+}
+.auth-btn:active { opacity: 0.85; }
+.auth-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 4px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+.auth-divider span {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+.auth-toggle {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #6b7280;
+}
+.auth-toggle a {
+  color: #1565c0;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  display: none;
+}
+.auth-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  display: none;
+}
+
+/* ─── 업로드 패널 ─── */
+.upload-panel {
+  margin: 12px 16px;
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.upload-panel .upload-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+.upload-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s;
+}
+.upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.upload-btn.uploading { background: #6b7280; }
+.upload-status {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+.upload-status.error { color: #b91c1c; }
+.upload-status.success { color: #166534; }
+.upload-file-input { display: none; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
+<!-- 로그인 화면 -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-brand">
+    <div class="auth-brand-logo">&#x1F5A8;</div>
+    <div class="auth-brand-name">갑우문화사</div>
+    <div class="auth-brand-tagline">생산현황 조회 시스템</div>
+  </div>
+  <div class="auth-box">
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
+
+    <!-- 로그인 폼 -->
+    <div id="loginForm">
+      <div class="auth-box-title">로그인</div>
+      <div class="auth-field">
+        <label>이메일</label>
+        <input type="email" id="loginEmail" placeholder="이메일 주소">
+      </div>
+      <div class="auth-field">
+        <label>비밀번호</label>
+        <input type="password" id="loginPassword" placeholder="비밀번호">
+      </div>
+      <button class="auth-btn" onclick="handleLogin()">로그인</button>
+      <div class="auth-divider"><span>OR</span></div>
+      <div class="auth-toggle">
+        계정이 없으신가요? <a onclick="showSignup()">가입 신청</a>
+      </div>
+    </div>
+
+    <!-- 가입 폼 -->
+    <div id="signupForm" style="display:none;">
+      <div class="auth-box-title">가입 신청</div>
+      <div class="auth-field">
+        <label>이메일</label>
+        <input type="email" id="signupEmail" placeholder="이메일 주소">
+      </div>
+      <div class="auth-field">
+        <label>비밀번호</label>
+        <input type="password" id="signupPassword" placeholder="비밀번호 (6자 이상)">
+      </div>
+      <button class="auth-btn" onclick="handleSignup()">가입 신청</button>
+      <div class="auth-divider"><span>OR</span></div>
+      <div class="auth-toggle">
+        이미 계정이 있으신가요? <a onclick="showLogin()">로그인</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 메인 화면 (로그인 후 표시) -->
+<div id="mainApp" style="display:none;">
+
 <div class="header">
-  <h1>갑우문화사 생산현황</h1>
-  <div class="date" id="updateDate">불러오는 중...</div>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">&#x1F5A8;</div>
+      <div>
+        <div class="header-title">갑우문화사 생산현황</div>
+        <div class="header-subtitle">PRODUCTION STATUS</div>
+      </div>
+    </div>
+    <button class="auth-logout" onclick="handleLogout()">로그아웃</button>
+  </div>
+  <div class="header-date-bar" id="updateDate">불러오는 중...</div>
 </div>
 
 <div class="dashboard" id="dashboardSection">
   <div class="dashboard-title">현황 요약</div>
   <div class="stat-grid">
-    <div class="stat-card today" onclick="statClick('today')">
+    <div class="stat-card today" onclick="statClick('today', this)">
+      <span class="stat-icon">📋</span>
       <div class="number" id="statToday">-</div>
       <div class="label">금일 작업 예정</div>
     </div>
-    <div class="stat-card" onclick="statClick('waiting')">
+    <div class="stat-card" onclick="statClick('waiting', this)">
+      <span class="stat-icon">⏳</span>
       <div class="number" id="statWaiting">-</div>
       <div class="label">작업 대기</div>
     </div>
-    <div class="stat-card done" onclick="statClick('recent')">
+    <div class="stat-card done" onclick="statClick('recent', this)">
+      <span class="stat-icon">✅</span>
       <div class="number" id="statRecent">-</div>
       <div class="label">최근 10일 완료</div>
     </div>
   </div>
   <div class="stat-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-    <div class="stat-card" onclick="statClick('clients')">
+    <div class="stat-card" onclick="statClick('clients', this)">
+      <span class="stat-icon">🏢</span>
       <div class="number" id="statClients">-</div>
       <div class="label">거래처</div>
     </div>
-    <div class="stat-card warn" onclick="statClick('urgent')">
+    <div class="stat-card warn" onclick="statClick('urgent', this)">
+      <span class="stat-icon">🚨</span>
       <div class="number" id="statUrgent">-</div>
       <div class="label">납기 임박</div>
     </div>
-    <div class="stat-card data-ready" onclick="statClick('dataReady')">
+    <div class="stat-card data-ready" onclick="statClick('dataReady', this)">
+      <span class="stat-icon">🖨️</span>
       <div class="number" id="statDataReady">-</div>
       <div class="label">인쇄데이터 준비완료</div>
     </div>
   </div>
-  <div class="client-chart" id="clientChart"></div>
+  <div id="verifyBadge" style="margin-top:12px;display:none;"></div>
 </div>
 
 <div id="filterBanner" style="display:none;"></div>
@@ -232,23 +642,49 @@ body {
   </div>
 </div>
 
+<!-- 관리자 패널: 업로드 + 승인 -->
+<div id="adminSection" style="display:none;">
+  <div class="upload-panel">
+    <div class="upload-title">재단지시서 업데이트</div>
+    <input type="file" id="fileInput" class="upload-file-input" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+    <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">엑셀 파일 선택 및 업로드</button>
+    <div class="upload-status" id="uploadStatus"></div>
+  </div>
+  <div id="adminPanel"></div>
+  <div id="approvedUsersPanel"></div>
+</div>
+
 <div class="client-list" id="clientList">
   <div class="loading">데이터를 불러오는 중...</div>
 </div>
+
+</div><!-- /mainApp -->
 
 <script>
 var allData = null;
 var currentTab = 'today';
 var currentFilter = null; // 대시보드 필터 모드
 
-function loadData() {
-  fetch('data.json')
-    .then(function(r) { if (!r.ok) throw 0; return r.json(); })
-    .then(function(d) { allData = d; renderAll(); })
-    .catch(function() {
+async function loadData() {
+  try {
+    // Supabase Storage에서 data.json 읽기
+    var res = await sb.storage.from('gabwoo-data').download('data.json');
+    if (res.error) throw res.error;
+    var text = await res.data.text();
+    allData = JSON.parse(text);
+    renderAll();
+  } catch(e) {
+    // 로컬 fallback (개발용)
+    try {
+      var resp = await fetch('data.json');
+      if (!resp.ok) throw 0;
+      allData = await resp.json();
+      renderAll();
+    } catch(e2) {
       document.getElementById('clientList').innerHTML =
-        '<div class="no-result"><div class="icon">!</div><div class="text">데이터를 불러올 수 없습니다.</div></div>';
-    });
+        '<div class="no-result"><div class="icon">!</div><div class="text">데이터가 없습니다.<br>관리자가 엑셀 파일을 업로드해주세요.</div></div>';
+    }
+  }
 }
 
 function renderAll() {
@@ -260,7 +696,7 @@ function renderAll() {
 
 function renderHeader() {
   document.getElementById('updateDate').textContent =
-    '기준일: ' + allData.updated_at + ' | 생성: ' + allData.generated_at;
+    '기준일: ' + allData.updated_at + ' | 업로드: ' + allData.generated_at;
 }
 
 // 납기 임박, 인쇄데이터 준비완료 사전 계산
@@ -287,18 +723,8 @@ function renderDashboard() {
   document.getElementById('statUrgent').textContent = urgentItems.length;
   document.getElementById('statDataReady').textContent = dataReadyItems.length;
 
-  var clients = s.clients_in_progress;
-  var entries = Object.entries(clients).slice(0, 5);
-  if (!entries.length) return;
-  var max = entries[0][1];
-  var h = '<div class="chart-title">거래처별 진행 물량 (상위 5)</div>';
-  entries.forEach(function(e) {
-    var pct = Math.round((e[1] / max) * 100);
-    h += '<div class="chart-bar-wrap"><div class="chart-bar-label"><span>' + esc(e[0]) +
-      '</span><span>' + esc(e[1]) + '건</span></div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:' +
-      pct + '%"></div></div></div>';
-  });
-  document.getElementById('clientChart').innerHTML = h;
+  // 저장된 검증 결과 표시
+  showVerifyBadge(null);
 }
 
 function renderTabs() {
@@ -310,7 +736,7 @@ function renderTabs() {
 }
 
 // 대시보드 카드 클릭
-function statClick(type) {
+function statClick(type, el) {
   // 같은 걸 다시 누르면 필터 해제
   if (currentFilter === type) {
     clearFilter();
@@ -322,7 +748,7 @@ function statClick(type) {
   // 카드 선택 표시
   var cards = document.querySelectorAll('.stat-card');
   cards.forEach(function(c) { c.classList.remove('selected'); });
-  event.currentTarget.classList.add('selected');
+  el.classList.add('selected');
 
   // 탭 숨기기 (필터 모드에서는 탭 비활성)
   document.getElementById('tabBar').style.opacity = '0.3';
@@ -561,14 +987,657 @@ function toggleGroup(header) { header.nextElementSibling.classList.toggle('colla
 
 function esc(s) {
   if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 document.getElementById('searchInput').addEventListener('input', function() {
   if (currentFilter) clearFilter();
   renderList();
 });
-loadData();
+
+// ─── Supabase 인증 ───
+var SUPABASE_URL = 'https://btbqzbrtsmwoolurpqgx.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnF6YnJ0c213b29sdXJwcWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDM4MDUsImV4cCI6MjA5MTAxOTgwNX0.OPGiHDcCCWvHeOgjDhhwlPmDYg7jGwR0ZWLJrbycwi4';
+
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('signupForm').style.display = 'none';
+  hideMessages();
+}
+
+function showSignup() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'block';
+  hideMessages();
+}
+
+function hideMessages() {
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showError(msg) {
+  var el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showSuccess(msg) {
+  var el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('authError').style.display = 'none';
+}
+
+async function handleLogin() {
+  hideMessages();
+  var email = document.getElementById('loginEmail').value.trim();
+  var password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) { showError('이메일과 비밀번호를 입력해주세요'); return; }
+
+  // 먼저 로그인 (JWT가 있어야 RLS 통과)
+  var res = await sb.auth.signInWithPassword({ email: email, password: password });
+  if (res.error) {
+    showError('이메일 또는 비밀번호가 올바르지 않습니다');
+    return;
+  }
+
+  // 로그인 후 승인 여부 확인
+  var approved = await checkApproval(email);
+  if (!approved) {
+    await sb.auth.signOut();
+    showError('관리자 승인 대기 중입니다. 승인 후 로그인할 수 있습니다.');
+    return;
+  }
+
+  enterApp();
+}
+
+async function handleSignup() {
+  hideMessages();
+  var email = document.getElementById('signupEmail').value.trim();
+  var password = document.getElementById('signupPassword').value;
+
+  if (!email || !password) { showError('이메일과 비밀번호를 입력해주세요'); return; }
+  if (password.length < 6) { showError('비밀번호는 6자 이상이어야 합니다'); return; }
+
+  // 이미 신청했는지 확인
+  var existing = await sb.from('signup_requests').select('status').eq('email', email).single();
+  if (existing.data) {
+    if (existing.data.status === 'pending') {
+      showError('이미 가입 신청됨. 관리자 승인을 기다려주세요.');
+    } else if (existing.data.status === 'approved') {
+      showError('이미 승인된 이메일입니다. 로그인해주세요.');
+      setTimeout(showLogin, 1500);
+    }
+    return;
+  }
+
+  // Supabase Auth에 계정 생성
+  var res = await sb.auth.signUp({ email: email, password: password });
+  if (res.error) {
+    showError('가입 실패: ' + res.error.message);
+    return;
+  }
+
+  // 가입 신청 기록
+  await sb.from('signup_requests').insert({ email: email, status: 'pending' });
+
+  // 즉시 로그아웃 (승인 전까지 사용 불가)
+  await sb.auth.signOut();
+
+  showSuccess('가입 신청 완료! 관리자 승인 후 로그인할 수 있습니다.');
+}
+
+async function handleApprove(email) {
+  // 관리자 전용: 승인 처리
+  await sb.from('signup_requests').update({ status: 'approved' }).eq('email', email);
+  await sb.from('approved_users').insert({ email: email });
+  loadPendingRequests();
+}
+
+async function handleReject(email) {
+  await sb.from('signup_requests').update({ status: 'rejected' }).eq('email', email);
+  loadPendingRequests();
+}
+
+async function checkApproval(email) {
+  var res = await sb.from('approved_users').select('email').eq('email', email).single();
+  return !res.error && res.data;
+}
+
+// 관리자 화면: 승인 대기 목록
+async function loadPendingRequests() {
+  var adminPanel = document.getElementById('adminPanel');
+  if (!adminPanel) return;
+
+  var res = await sb.from('signup_requests').select('*').eq('status', 'pending').order('requested_at', { ascending: false });
+  if (!res.data || res.data.length === 0) {
+    adminPanel.innerHTML = '<div style="padding:16px;color:#888;font-size:13px;">승인 대기 중인 신청이 없습니다</div>';
+    return;
+  }
+
+  var html = '<div style="padding:12px 16px;font-size:13px;font-weight:700;color:#888;">승인 대기 (' + res.data.length + '건)</div>';
+  res.data.forEach(function(req) {
+    var date = new Date(req.requested_at).toLocaleDateString('ko-KR');
+    html += '<div style="padding:10px 16px;background:white;margin:0 16px 8px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">';
+    html += '<div><div style="font-weight:600;font-size:14px;">' + esc(req.email) + '</div><div style="font-size:11px;color:#888;">' + date + ' 신청</div></div>';
+    html += '<div><button onclick="handleApprove(\'' + esc(req.email) + '\')" style="background:#2e7d32;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-right:6px;">승인</button>';
+    html += '<button onclick="handleReject(\'' + esc(req.email) + '\')" style="background:#c62828;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">거절</button></div>';
+    html += '</div>';
+  });
+  adminPanel.innerHTML = html;
+}
+
+// 승인된 사용자 목록 + 관리자 지정
+async function loadApprovedUsers() {
+  var panel = document.getElementById('approvedUsersPanel');
+  if (!panel) return;
+
+  var res = await sb.from('approved_users').select('*').order('approved_at', { ascending: false });
+  if (!res.data || res.data.length === 0) {
+    panel.innerHTML = '';
+    return;
+  }
+
+  var session = await sb.auth.getSession();
+  var myEmail = session.data.session ? session.data.session.user.email : '';
+
+  var html = '<div style="padding:12px 16px;font-size:13px;font-weight:700;color:#6b7280;">승인된 사용자 (' + res.data.length + '명)</div>';
+  res.data.forEach(function(user) {
+    var isMe = user.email === myEmail;
+    var adminBadge = user.is_admin ? '<span style="background:#1565c0;color:white;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:6px;">관리자</span>' : '';
+    html += '<div style="padding:10px 16px;background:white;margin:0 16px 8px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">';
+    html += '<div><span style="font-weight:600;font-size:14px;">' + esc(user.email) + '</span>' + adminBadge + '</div>';
+    if (!isMe) {
+      if (user.is_admin) {
+        html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', false)" style="background:#888;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 해제</button>';
+      } else {
+        html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', true)" style="background:#1565c0;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 지정</button>';
+      }
+    } else {
+      html += '<span style="font-size:11px;color:#888;">나</span>';
+    }
+    html += '</div>';
+  });
+  panel.innerHTML = html;
+}
+
+async function toggleAdmin(email, makeAdmin) {
+  var res = await sb.from('approved_users').update({ is_admin: makeAdmin }).eq('email', email);
+  if (res.error) {
+    alert('권한 변경 실패: ' + res.error.message);
+    return;
+  }
+  loadApprovedUsers();
+}
+
+var isAdmin = false;
+
+async function checkAdmin() {
+  var session = await sb.auth.getSession();
+  if (!session.data.session) return false;
+  var email = session.data.session.user.email;
+  var res = await sb.from('approved_users').select('is_admin').eq('email', email).single();
+  return res.data && res.data.is_admin === true;
+}
+
+async function enterApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  loadData();
+
+  // DB에서 관리자 여부 확인
+  isAdmin = await checkAdmin();
+  if (isAdmin) {
+    document.getElementById('adminSection').style.display = 'block';
+    loadPendingRequests();
+    loadApprovedUsers();
+  }
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  allData = null;
+  urgentItems = [];
+  dataReadyItems = [];
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  hideMessages();
+}
+
+// ─── 엑셀 업로드 + 변환 ───
+
+async function handleFileSelect(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var btn = document.getElementById('uploadBtn');
+  var status = document.getElementById('uploadStatus');
+  btn.disabled = true;
+  btn.textContent = '변환 중...';
+  btn.className = 'upload-btn uploading';
+  status.className = 'upload-status';
+  status.textContent = '엑셀 파일을 읽는 중...';
+
+  try {
+    var arrayBuffer = await file.arrayBuffer();
+    var workbook = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
+
+    status.textContent = '데이터 변환 중...';
+    var jsonData = convertExcel(workbook);
+
+    if (!jsonData || jsonData.today_work.length + jsonData.waiting.length === 0) {
+      throw new Error('변환된 데이터가 없습니다. 올바른 재단지시서 파일인지 확인해주세요.');
+    }
+
+    status.textContent = '서버에 업로드 중...';
+
+    // Supabase Storage에 업로드
+    var jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+    var uploadRes = await sb.storage.from('gabwoo-data').upload('data.json', jsonBlob, {
+      upsert: true,
+      contentType: 'application/json'
+    });
+
+    if (uploadRes.error) throw uploadRes.error;
+
+    // 데이터 검증
+    status.textContent = '데이터 검증 중...';
+    var verifyResult = verifyData(workbook, jsonData);
+
+    status.className = 'upload-status success';
+    status.textContent = '업데이트 완료! 금일 작업 예정 ' + jsonData.summary.today_work + '건, 작업 대기 ' + jsonData.summary.waiting + '건, 완료 ' + jsonData.summary.recent_completed + '건';
+
+    if (!verifyResult.passed) {
+      status.className = 'upload-status error';
+      status.textContent += ' (검증 실패: ' + verifyResult.errors.length + '건 불일치)';
+    }
+
+    // 데이터 새로고침 + 검증 배지 표시
+    allData = jsonData;
+    renderAll();
+    showVerifyBadge(verifyResult);
+
+  } catch(e) {
+    status.className = 'upload-status error';
+    status.textContent = '오류: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '엑셀 파일 선택 및 업로드';
+  btn.className = 'upload-btn';
+  event.target.value = '';
+}
+
+function convertExcel(workbook) {
+  var ws = workbook.Sheets['재단지시서'];
+  if (!ws) throw new Error('"재단지시서" 시트를 찾을 수 없습니다.');
+
+  // 셀 값 읽기 헬퍼
+  function cellVal(r, c) {
+    var addr = XLSX.utils.encode_cell({r: r, c: c});
+    var cell = ws[addr];
+    return cell ? cell.v : null;
+  }
+
+  // 셀 배경색 확인 (노란색 계열)
+  function isYellow(r, c) {
+    for (var col = 2; col <= 9; col++) { // C~J열 (0-indexed: 2~9)
+      var addr = XLSX.utils.encode_cell({r: r, c: col});
+      var cell = ws[addr];
+      if (cell && cell.s) {
+        var fill = cell.s.fgColor || cell.s.bgColor;
+        if (fill) {
+          // theme=5 또는 노란색 RGB
+          if (fill.theme === 5) return true;
+          var rgb = (fill.rgb || '').toUpperCase();
+          if (rgb === 'FFFF00' || rgb === 'FFC000' || rgb === 'FFFFFF00' || rgb === 'FFFFC000') return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // 모든 섹션 찾기: A열에 "설비별 재단 지시서"가 있는 행
+  var sections = [];
+  var range = XLSX.utils.decode_range(ws['!ref']);
+  for (var r = 0; r <= range.e.r; r++) {
+    var a = cellVal(r, 0); // A열
+    if (a && String(a).indexOf('설비별 재단 지시서') !== -1) {
+      var sDate = cellVal(r, 18); // S열 (0-indexed: 18)
+      if (sDate) {
+        // 엑셀 날짜 숫자 → Date
+        var dt;
+        if (typeof sDate === 'number') {
+          dt = new Date((sDate - 25569) * 86400000);
+        } else if (sDate instanceof Date) {
+          dt = sDate;
+        } else {
+          continue;
+        }
+        sections.push({ row: r, date: dt });
+      }
+    }
+  }
+
+  if (sections.length < 2) throw new Error('섹션이 부족합니다 (최소 2개 필요)');
+
+  // 오늘 이하 중 최신 섹션
+  var today = new Date();
+  today.setHours(23, 59, 59);
+  var validSections = sections.filter(function(s) { return s.date <= today; });
+  if (!validSections.length) validSections = sections;
+  var latestSection = validSections.reduce(function(a, b) { return a.date > b.date ? a : b; });
+  var latestIdx = sections.indexOf(latestSection);
+
+  function sectionEnd(idx) {
+    return idx + 1 < sections.length ? sections[idx + 1].row - 1 : range.e.r;
+  }
+
+  function formatDate(dt) {
+    var y = dt.getFullYear();
+    var m = ('0' + (dt.getMonth() + 1)).slice(-2);
+    var d = ('0' + dt.getDate()).slice(-2);
+    return y + '-' + m + '-' + d;
+  }
+
+  // 섹션 파싱
+  function parseSection(idx, checkColor) {
+    var startRow = sections[idx].row + 3; // 헤더 3행 스킵
+    var endRow = sectionEnd(idx);
+    var items = [];
+    var currentEquip = '';
+
+    for (var r = startRow; r <= endRow; r++) {
+      var bVal = cellVal(r, 1); // B열
+      var cVal = cellVal(r, 2); // C열
+
+      if (!bVal && !cVal) continue;
+      var bStr = String(bVal || '');
+      var cStr = String(cVal || '');
+      if (bStr === '거래처' || bStr.indexOf('↑↑↑') !== -1 || bStr.indexOf('필히') !== -1) continue;
+      if (cStr.indexOf('하기품목') === 0 || cStr.indexOf('↑↑↑') === 0) continue;
+      if (!bVal) continue;
+
+      // 설비
+      var aVal = cellVal(r, 0);
+      if (aVal) {
+        var aStr = String(aVal).trim();
+        if (aStr !== '설비' && aStr.indexOf('설비별') === -1 && aStr.indexOf('※') === -1) {
+          currentEquip = aStr;
+        }
+      }
+
+      // 납기
+      var rVal = cellVal(r, 17); // R열
+      var deadlineStr = '-';
+      if (rVal) {
+        if (typeof rVal === 'number') {
+          deadlineStr = formatDate(new Date((rVal - 25569) * 86400000));
+        } else if (rVal instanceof Date) {
+          deadlineStr = formatDate(rVal);
+        } else if (String(rVal).trim() !== '-') {
+          deadlineStr = String(rVal).trim();
+        }
+      }
+
+      // 통수
+      var kVal = cellVal(r, 10); // K열
+      var qtyStr = '-';
+      if (kVal != null && typeof kVal === 'number') {
+        qtyStr = Math.round(kVal).toLocaleString();
+      } else if (kVal) {
+        qtyStr = String(kVal);
+      }
+
+      // 판수
+      var lVal = cellVal(r, 11);
+      var platesStr = lVal != null ? String(typeof lVal === 'number' ? Math.round(lVal) : lVal) : '-';
+
+      // 합계
+      var jVal = cellVal(r, 9);
+      var totalStr = '-';
+      if (jVal == null) totalStr = '-';
+      else if (typeof jVal === 'string') totalStr = jVal.trim();
+      else if (jVal === Math.floor(jVal)) totalStr = String(Math.floor(jVal));
+      else totalStr = String(Math.round(jVal * 100) / 100);
+
+      // 데이터 상태
+      var dVal = cellVal(r, 3);
+      var dataStatus = dVal ? String(dVal).trim() : '-';
+      if (!dataStatus) dataStatus = '-';
+
+      var item = {
+        row: r,
+        equipment: currentEquip,
+        client: bStr.trim(),
+        product: cStr.trim(),
+        data_status: dataStatus,
+        sample: String(cellVal(r, 4) || '-').trim() || '-',
+        paper: String(cellVal(r, 5) || '-').trim() || '-',
+        size: String(cellVal(r, 6) || '-').trim() || '-',
+        cuts: cellVal(r, 7) ? String(cellVal(r, 7)).trim() : '-',
+        grain: String(cellVal(r, 8) || '-').trim() || '-',
+        total: totalStr,
+        quantity: qtyStr,
+        plates: platesStr,
+        method: String(cellVal(r, 12) || '-').trim() || '-',
+        category: String(cellVal(r, 13) || '-').trim() || '-',
+        plate_output: String(cellVal(r, 14) || '-').trim() || '-',
+        colors: cellVal(r, 15) ? String(cellVal(r, 15)).trim() : '-',
+        post_process: String(cellVal(r, 16) || '-').trim() || '-',
+        deadline: deadlineStr,
+        is_today_work: checkColor ? isYellow(r) : false
+      };
+      items.push(item);
+    }
+    return items;
+  }
+
+  var latestDate = formatDate(latestSection.date);
+  var currentItems = parseSection(latestIdx, true);
+
+  // 완료 건 추출 (연쇄 비교)
+  var currentKeys = {};
+  currentItems.forEach(function(i) { currentKeys[i.client + '|||' + i.product] = true; });
+
+  function extractCompleted(maxSteps) {
+    var items = [];
+    var seen = {};
+    for (var step = 0; step < Math.min(maxSteps, latestIdx); step++) {
+      var newerIdx = latestIdx - step;
+      var olderIdx = newerIdx - 1;
+      if (olderIdx < 0) break;
+
+      var newerDate = formatDate(sections[newerIdx].date);
+      var olderItems = parseSection(olderIdx, false);
+      var newerItems = parseSection(newerIdx, false);
+      var newerKeys = {};
+      newerItems.forEach(function(i) { newerKeys[i.client + '|||' + i.product] = true; });
+
+      olderItems.forEach(function(item) {
+        var key = item.client + '|||' + item.product;
+        if (!newerKeys[key] && !currentKeys[key] && !seen[key]) {
+          item.completed_between = formatDate(sections[olderIdx].date) + ' → ' + newerDate;
+          item.completed_date = newerDate;
+          items.push(item);
+          seen[key] = true;
+        }
+      });
+    }
+    return items;
+  }
+
+  // 10일 범위 계산
+  var lookback10d = 0;
+  for (var s = 0; s < latestIdx; s++) {
+    var idx = latestIdx - s - 1;
+    if (idx < 0) break;
+    var delta = (latestSection.date - sections[idx].date) / 86400000;
+    if (delta > 10) break;
+    lookback10d = s + 1;
+  }
+
+  var recentCompleted = extractCompleted(lookback10d);
+  recentCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
+  recentCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
+
+  var allCompleted = extractCompleted(latestIdx);
+  allCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
+  allCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
+
+  var todayWork = currentItems.filter(function(i) { return i.is_today_work; });
+  var waiting = currentItems.filter(function(i) { return !i.is_today_work; });
+
+  // 거래처별 통계
+  var clientsAll = {};
+  currentItems.forEach(function(i) { clientsAll[i.client] = (clientsAll[i.client] || 0) + 1; });
+
+  // 날짜별 통계
+  var recentByDate = {}, allByDate = {};
+  recentCompleted.forEach(function(i) { recentByDate[i.completed_date] = (recentByDate[i.completed_date] || 0) + 1; });
+  allCompleted.forEach(function(i) { allByDate[i.completed_date] = (allByDate[i.completed_date] || 0) + 1; });
+
+  var now = new Date();
+  return {
+    updated_at: latestDate,
+    generated_at: now.getFullYear() + '-' + ('0'+(now.getMonth()+1)).slice(-2) + '-' + ('0'+now.getDate()).slice(-2) + ' ' + ('0'+now.getHours()).slice(-2) + ':' + ('0'+now.getMinutes()).slice(-2),
+    summary: {
+      today_work: todayWork.length,
+      waiting: waiting.length,
+      recent_completed: recentCompleted.length,
+      all_completed: allCompleted.length,
+      total_clients: Object.keys(clientsAll).length,
+      clients_in_progress: clientsAll,
+      recent_completed_by_date: recentByDate,
+      all_completed_by_date: allByDate
+    },
+    today_work: todayWork,
+    waiting: waiting,
+    recent_completed: recentCompleted,
+    all_completed: allCompleted
+  };
+}
+
+// ─── 데이터 검증 ───
+
+function verifyData(workbook, jsonData) {
+  var ws = workbook.Sheets['재단지시서'];
+  var range = XLSX.utils.decode_range(ws['!ref']);
+  var errors = [];
+
+  function cellVal(r, c) {
+    var addr = XLSX.utils.encode_cell({r: r, c: c});
+    var cell = ws[addr];
+    return cell ? cell.v : null;
+  }
+
+  // 1. 진행 중 전체 건수 검증 (금일작업 + 대기 = 현재 섹션 데이터 행 수)
+  var jsonTotal = jsonData.today_work.length + jsonData.waiting.length;
+
+  // 2. 거래처별 건수 크로스체크 (상위 5개)
+  var clientCounts = jsonData.summary.clients_in_progress;
+  var topClients = Object.entries(clientCounts).sort(function(a,b) { return b[1]-a[1]; }).slice(0, 5);
+
+  // 3. 각 아이템의 거래처명/제품명이 원본과 일치하는지 샘플 검증
+  var sampleSize = Math.min(10, jsonData.today_work.length);
+  var sampleErrors = 0;
+  for (var i = 0; i < sampleSize; i++) {
+    var item = jsonData.today_work[i];
+    var excelClient = cellVal(item.row, 1); // B열
+    var excelProduct = cellVal(item.row, 2); // C열
+    if (excelClient && String(excelClient).trim() !== item.client) {
+      errors.push('행' + item.row + ' 거래처 불일치: ' + item.client + ' vs ' + excelClient);
+      sampleErrors++;
+    }
+    if (excelProduct && String(excelProduct).trim() !== item.product) {
+      errors.push('행' + item.row + ' 제품명 불일치');
+      sampleErrors++;
+    }
+  }
+
+  // 4. 통수(K열) 합계 검증 — 금일작업 항목의 통수 합이 맞는지
+  var jsonQtySum = 0;
+  var excelQtySum = 0;
+  jsonData.today_work.forEach(function(item) {
+    var q = parseInt(String(item.quantity).replace(/,/g, ''));
+    if (!isNaN(q)) jsonQtySum += q;
+    var ek = cellVal(item.row, 10); // K열
+    if (typeof ek === 'number') excelQtySum += Math.round(ek);
+  });
+  if (jsonQtySum !== excelQtySum) {
+    errors.push('금일작업 통수 합계 불일치: JSON=' + jsonQtySum.toLocaleString() + ' / 엑셀=' + excelQtySum.toLocaleString());
+  }
+
+  var result = {
+    passed: errors.length === 0,
+    totalItems: jsonTotal,
+    sampleChecked: sampleSize,
+    sampleErrors: sampleErrors,
+    qtyMatch: jsonQtySum === excelQtySum,
+    jsonQtySum: jsonQtySum,
+    excelQtySum: excelQtySum,
+    errors: errors,
+    verifiedAt: new Date().toLocaleString('ko-KR')
+  };
+
+  return result;
+}
+
+function showVerifyBadge(result) {
+  var badge = document.getElementById('verifyBadge');
+  if (!result) {
+    // Storage에서 저장된 검증 결과 표시
+    var saved = localStorage.getItem('lastVerify');
+    if (saved) {
+      result = JSON.parse(saved);
+    } else {
+      badge.style.display = 'none';
+      return;
+    }
+  } else {
+    localStorage.setItem('lastVerify', JSON.stringify(result));
+  }
+
+  badge.style.display = 'block';
+  if (result.passed) {
+    badge.innerHTML = '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;font-size:13px;">' +
+      '<div style="color:#166534;font-weight:700;margin-bottom:4px;">데이터 검증 통과</div>' +
+      '<div style="color:#4b5563;">진행 중 ' + result.totalItems + '건 · 샘플 ' + result.sampleChecked + '건 대조 일치 · 통수 합계 일치 (' + result.jsonQtySum.toLocaleString() + ')</div>' +
+      '<div style="color:#9ca3af;font-size:11px;margin-top:4px;">검증: ' + result.verifiedAt + '</div>' +
+      '</div>';
+  } else {
+    badge.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;font-size:13px;">' +
+      '<div style="color:#b91c1c;font-weight:700;margin-bottom:4px;">데이터 검증 실패 (' + result.errors.length + '건)</div>' +
+      '<div style="color:#4b5563;">' + result.errors.map(function(e) { return esc(e); }).join('<br>') + '</div>' +
+      '<div style="color:#9ca3af;font-size:11px;margin-top:4px;">검증: ' + result.verifiedAt + '</div>' +
+      '</div>';
+  }
+}
+
+// 페이지 로드 시 세션 확인
+async function checkSession() {
+  var res = await sb.auth.getSession();
+  if (res.data.session) {
+    var email = res.data.session.user.email;
+    var approved = await checkApproval(email);
+    if (approved) {
+      enterApp();
+      return;
+    }
+    await sb.auth.signOut();
+  }
+  // 로그인 화면 표시 (기본 상태)
+}
+
+checkSession();
 </script>
 </body>
 </html>
