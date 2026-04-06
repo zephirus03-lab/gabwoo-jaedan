@@ -576,7 +576,10 @@ body {
         <div class="header-subtitle">PRODUCTION STATUS</div>
       </div>
     </div>
-    <button class="auth-logout" onclick="handleLogout()">로그아웃</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="auth-logout" id="btnUserMgmt" onclick="openUserMgmt()" style="display:none;">사용자 관리</button>
+      <button class="auth-logout" onclick="handleLogout()">로그아웃</button>
+    </div>
   </div>
   <div class="header-date-bar" id="updateDate">불러오는 중...</div>
 </div>
@@ -642,7 +645,7 @@ body {
   </div>
 </div>
 
-<!-- 관리자 패널: 업로드 + 승인 -->
+<!-- 관리자 패널: 업로드만 -->
 <div id="adminSection" style="display:none;">
   <div class="upload-panel">
     <div class="upload-title">재단지시서 업데이트</div>
@@ -650,8 +653,18 @@ body {
     <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">엑셀 파일 선택 및 업로드</button>
     <div class="upload-status" id="uploadStatus"></div>
   </div>
-  <div id="adminPanel"></div>
-  <div id="approvedUsersPanel"></div>
+</div>
+
+<!-- 사용자 관리 오버레이 -->
+<div id="userMgmtOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#f0f2f5;z-index:200;overflow-y:auto;">
+  <div style="max-width:640px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:201;">
+      <div style="font-size:17px;font-weight:700;">사용자 관리</div>
+      <button onclick="closeUserMgmt()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">닫기</button>
+    </div>
+    <div id="adminPanel" style="padding-top:8px;"></div>
+    <div id="approvedUsersPanel"></div>
+  </div>
 </div>
 
 <div class="client-list" id="clientList">
@@ -695,8 +708,11 @@ function renderAll() {
 }
 
 function renderHeader() {
-  document.getElementById('updateDate').textContent =
-    '기준일: ' + allData.updated_at + ' | 업로드: ' + allData.generated_at;
+  var text = '기준일: ' + allData.updated_at + ' | 업로드: ' + allData.generated_at;
+  if (allData.uploaded_by) {
+    text += ' (' + allData.uploaded_by.split('@')[0] + ')';
+  }
+  document.getElementById('updateDate').textContent = text;
 }
 
 // 납기 임박, 인쇄데이터 준비완료 사전 계산
@@ -1195,9 +1211,18 @@ async function enterApp() {
   isAdmin = await checkAdmin();
   if (isAdmin) {
     document.getElementById('adminSection').style.display = 'block';
-    loadPendingRequests();
-    loadApprovedUsers();
+    document.getElementById('btnUserMgmt').style.display = 'inline-block';
   }
+}
+
+function openUserMgmt() {
+  document.getElementById('userMgmtOverlay').style.display = 'block';
+  loadPendingRequests();
+  loadApprovedUsers();
+}
+
+function closeUserMgmt() {
+  document.getElementById('userMgmtOverlay').style.display = 'none';
 }
 
 async function handleLogout() {
@@ -1238,6 +1263,12 @@ async function handleFileSelect(event) {
     }
 
     status.textContent = '서버에 업로드 중...';
+
+    // 업로드한 사람 기록
+    var session = await sb.auth.getSession();
+    if (session.data.session) {
+      jsonData.uploaded_by = session.data.session.user.email;
+    }
 
     // Supabase Storage에 업로드
     var jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
@@ -1509,6 +1540,7 @@ function convertExcel(workbook) {
   return {
     updated_at: latestDate,
     generated_at: now.getFullYear() + '-' + ('0'+(now.getMonth()+1)).slice(-2) + '-' + ('0'+now.getDate()).slice(-2) + ' ' + ('0'+now.getHours()).slice(-2) + ':' + ('0'+now.getMinutes()).slice(-2),
+    uploaded_by: '',
     summary: {
       today_work: todayWork.length,
       waiting: waiting.length,
