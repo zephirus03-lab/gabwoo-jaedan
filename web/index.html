@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>갑우문화사 생산현황</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+}
+
+.header {
+  background: #1a1a2e;
+  color: white;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.header .date { font-size: 12px; color: #aaa; }
+
+/* 대시보드 */
+.dashboard { padding: 16px; }
+.dashboard-title {
+  font-size: 13px; font-weight: 700; color: #888;
+  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: white; border-radius: 12px; padding: 14px 10px;
+  text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+.stat-card:active { transform: scale(0.96); }
+.stat-card.selected {
+  box-shadow: 0 0 0 2px #1a1a2e, 0 2px 8px rgba(0,0,0,0.15);
+}
+.stat-card .number { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+.stat-card .label { font-size: 11px; color: #888; margin-top: 3px; }
+.stat-card.today .number { color: #1565c0; }
+.stat-card.today.selected { box-shadow: 0 0 0 2px #1565c0, 0 2px 8px rgba(21,101,192,0.2); }
+.stat-card.warn .number { color: #e65100; }
+.stat-card.warn.selected { box-shadow: 0 0 0 2px #e65100, 0 2px 8px rgba(230,81,0,0.2); }
+.stat-card.done .number { color: #2e7d32; }
+.stat-card.done.selected { box-shadow: 0 0 0 2px #2e7d32, 0 2px 8px rgba(46,125,50,0.2); }
+.stat-card.data-ready .number { color: #1565c0; }
+.stat-card.data-ready.selected { box-shadow: 0 0 0 2px #1565c0, 0 2px 8px rgba(21,101,192,0.2); }
+
+/* 차트 */
+.client-chart {
+  background: white; border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.chart-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 10px; }
+.chart-bar-wrap { margin-bottom: 6px; }
+.chart-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: #555; margin-bottom: 3px;
+}
+.chart-bar-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.chart-bar-fill { height: 100%; background: #1a1a2e; border-radius: 4px; }
+
+/* 필터 안내 */
+.filter-banner {
+  margin: 12px 16px 0;
+  background: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #e65100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.filter-banner .clear-btn {
+  background: #e65100; color: white; border: none;
+  padding: 4px 12px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; font-weight: 600;
+}
+
+/* 검색 */
+.search-wrap { padding: 16px 16px 8px; }
+.search-input {
+  width: 100%; padding: 14px 16px;
+  border: 2px solid #e0e0e0; border-radius: 12px;
+  font-size: 16px; outline: none; background: white;
+}
+.search-input:focus { border-color: #1a1a2e; }
+.search-input::placeholder { color: #bbb; }
+.search-status-hint { padding: 6px 16px 0; font-size: 12px; color: #888; }
+
+/* 탭 */
+.tab-bar { display: flex; padding: 8px 16px; gap: 6px; }
+.tab-btn {
+  flex: 1; padding: 10px 4px;
+  border: 2px solid #e0e0e0; border-radius: 10px;
+  background: white; font-size: 13px; font-weight: 600;
+  color: #888; text-align: center; cursor: pointer; user-select: none;
+}
+.tab-btn.active { border-color: #1a1a2e; color: #1a1a2e; background: #f0f0ff; }
+.tab-btn.active-today { border-color: #1565c0; color: #1565c0; background: #e3f2fd; }
+.tab-btn.active-done { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
+.tab-count { font-size: 11px; font-weight: 400; display: block; margin-top: 2px; color: #aaa; }
+.tab-btn.active .tab-count { color: #1a1a2e; }
+.tab-btn.active-today .tab-count { color: #1565c0; }
+.tab-btn.active-done .tab-count { color: #2e7d32; }
+
+/* 날짜 구분 */
+.date-divider {
+  padding: 10px 0 6px; font-size: 13px; font-weight: 700; color: #888;
+  display: flex; justify-content: space-between;
+}
+.date-divider .date-count { font-weight: 400; font-size: 12px; color: #aaa; }
+
+/* 거래처 그룹 */
+.client-list { padding: 0 16px 100px; }
+.client-group { margin-bottom: 16px; }
+.client-header {
+  color: white; padding: 12px 16px;
+  border-radius: 12px 12px 0 0; font-size: 15px; font-weight: 700;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; user-select: none;
+}
+.client-header.header-today { background: #1565c0; }
+.client-header.header-waiting { background: #1a1a2e; }
+.client-header.header-done { background: #4a4a5e; }
+.client-header .count {
+  background: rgba(255,255,255,0.2); padding: 2px 10px;
+  border-radius: 10px; font-size: 13px; font-weight: 500;
+}
+.client-items {
+  background: white; border-radius: 0 0 12px 12px;
+  overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.client-items.collapsed { display: none; }
+
+.item-card { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+.item-card:last-child { border-bottom: none; }
+.item-card.completed-item { opacity: 0.7; }
+.item-product { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; line-height: 1.4; }
+.item-details { display: flex; flex-wrap: wrap; gap: 6px; }
+.item-tag {
+  font-size: 11px; padding: 3px 8px; border-radius: 6px;
+  background: #f0f0f0; color: #555; white-space: nowrap;
+}
+.item-tag.tag-today { background: #e3f2fd; color: #1565c0; font-weight: 600; }
+.item-tag.tag-waiting { background: #f5f5f5; color: #888; }
+.item-tag.tag-done { background: #e0e0e0; color: #616161; }
+.item-tag.status-data-done { background: #e8f5e9; color: #2e7d32; }
+.item-tag.status-data-wait { background: #fff3e0; color: #e65100; }
+.item-tag.deadline { background: #e3f2fd; color: #1565c0; }
+.item-tag.deadline-urgent { background: #ffebee; color: #c62828; font-weight: 600; }
+.item-tag.equipment { background: #f3e5f5; color: #6a1b9a; }
+
+.no-result { text-align: center; padding: 60px 20px; color: #999; }
+.no-result .icon { font-size: 48px; margin-bottom: 12px; }
+.no-result .text { font-size: 15px; }
+.loading { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>갑우문화사 생산현황</h1>
+  <div class="date" id="updateDate">불러오는 중...</div>
+</div>
+
+<div class="dashboard" id="dashboardSection">
+  <div class="dashboard-title">현황 요약</div>
+  <div class="stat-grid">
+    <div class="stat-card today" onclick="statClick('today')">
+      <div class="number" id="statToday">-</div>
+      <div class="label">금일 작업 예정</div>
+    </div>
+    <div class="stat-card" onclick="statClick('waiting')">
+      <div class="number" id="statWaiting">-</div>
+      <div class="label">작업 대기</div>
+    </div>
+    <div class="stat-card done" onclick="statClick('done')">
+      <div class="number" id="statCompleted">-</div>
+      <div class="label">최근 완료</div>
+    </div>
+  </div>
+  <div class="stat-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="stat-card" onclick="statClick('clients')">
+      <div class="number" id="statClients">-</div>
+      <div class="label">거래처</div>
+    </div>
+    <div class="stat-card warn" onclick="statClick('urgent')">
+      <div class="number" id="statUrgent">-</div>
+      <div class="label">납기 임박</div>
+    </div>
+    <div class="stat-card data-ready" onclick="statClick('dataReady')">
+      <div class="number" id="statDataReady">-</div>
+      <div class="label">인쇄데이터 준비완료</div>
+    </div>
+  </div>
+  <div class="client-chart" id="clientChart"></div>
+</div>
+
+<div id="filterBanner" style="display:none;"></div>
+
+<div class="search-wrap">
+  <input type="text" class="search-input" id="searchInput" placeholder="거래처 또는 제품명 검색">
+</div>
+<div class="search-status-hint" id="searchHint" style="display:none;"></div>
+
+<div class="tab-bar" id="tabBar">
+  <div class="tab-btn active-today" id="tabToday" onclick="switchTab('today')">
+    금일 작업 예정<span class="tab-count" id="tabTodayCount"></span>
+  </div>
+  <div class="tab-btn" id="tabWaiting" onclick="switchTab('waiting')">
+    작업 대기<span class="tab-count" id="tabWaitingCount"></span>
+  </div>
+  <div class="tab-btn" id="tabDone" onclick="switchTab('done')">
+    완료<span class="tab-count" id="tabDoneCount"></span>
+  </div>
+</div>
+
+<div class="client-list" id="clientList">
+  <div class="loading">데이터를 불러오는 중...</div>
+</div>
+
+<script>
+var allData = null;
+var currentTab = 'today';
+var currentFilter = null; // 대시보드 필터 모드
+
+function loadData() {
+  fetch('data.json')
+    .then(function(r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function(d) { allData = d; renderAll(); })
+    .catch(function() {
+      document.getElementById('clientList').innerHTML =
+        '<div class="no-result"><div class="icon">!</div><div class="text">데이터를 불러올 수 없습니다.</div></div>';
+    });
+}
+
+function renderAll() {
+  renderHeader();
+  renderDashboard();
+  renderTabs();
+  renderList();
+}
+
+function renderHeader() {
+  document.getElementById('updateDate').textContent =
+    '기준일: ' + allData.updated_at + ' | 생성: ' + allData.generated_at;
+}
+
+// 납기 임박, 인쇄데이터 준비완료 사전 계산
+var urgentItems = [], dataReadyItems = [];
+
+function renderDashboard() {
+  var s = allData.summary;
+  document.getElementById('statToday').textContent = s.today_work;
+  document.getElementById('statWaiting').textContent = s.waiting;
+  document.getElementById('statCompleted').textContent = s.completed;
+  document.getElementById('statClients').textContent = s.total_clients;
+
+  var allCurrent = allData.today_work.concat(allData.waiting);
+  urgentItems = [];
+  dataReadyItems = [];
+  var today = new Date();
+  allCurrent.forEach(function(item) {
+    if (item.deadline && item.deadline !== '-') {
+      var diff = (new Date(item.deadline) - today) / 86400000;
+      if (diff <= 3 && diff >= -1) urgentItems.push(item);
+    }
+    if (item.data_status === '완료') dataReadyItems.push(item);
+  });
+  document.getElementById('statUrgent').textContent = urgentItems.length;
+  document.getElementById('statDataReady').textContent = dataReadyItems.length;
+
+  var clients = s.clients_in_progress;
+  var entries = Object.entries(clients).slice(0, 5);
+  if (!entries.length) return;
+  var max = entries[0][1];
+  var h = '<div class="chart-title">거래처별 진행 물량 (상위 5)</div>';
+  entries.forEach(function(e) {
+    var pct = Math.round((e[1] / max) * 100);
+    h += '<div class="chart-bar-wrap"><div class="chart-bar-label"><span>' + esc(e[0]) +
+      '</span><span>' + e[1] + '건</span></div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:' +
+      pct + '%"></div></div></div>';
+  });
+  document.getElementById('clientChart').innerHTML = h;
+}
+
+function renderTabs() {
+  var s = allData.summary;
+  document.getElementById('tabTodayCount').textContent = s.today_work;
+  document.getElementById('tabWaitingCount').textContent = s.waiting;
+  document.getElementById('tabDoneCount').textContent = s.completed;
+}
+
+// 대시보드 카드 클릭
+function statClick(type) {
+  // 같은 걸 다시 누르면 필터 해제
+  if (currentFilter === type) {
+    clearFilter();
+    return;
+  }
+  currentFilter = type;
+  document.getElementById('searchInput').value = '';
+
+  // 카드 선택 표시
+  var cards = document.querySelectorAll('.stat-card');
+  cards.forEach(function(c) { c.classList.remove('selected'); });
+  event.currentTarget.classList.add('selected');
+
+  // 탭 숨기기 (필터 모드에서는 탭 비활성)
+  document.getElementById('tabBar').style.opacity = '0.3';
+  document.getElementById('tabBar').style.pointerEvents = 'none';
+
+  // 필터 배너 표시
+  var filterNames = {
+    today: '금일 작업 예정',
+    waiting: '작업 대기',
+    done: '최근 완료',
+    urgent: '납기 임박 (3일 이내)',
+    dataReady: '인쇄데이터 준비완료',
+    clients: '거래처별 현황'
+  };
+  var banner = document.getElementById('filterBanner');
+  banner.style.display = 'block';
+  banner.innerHTML = '<div class="filter-banner"><span>' + filterNames[type] + ' 상세</span>' +
+    '<button class="clear-btn" onclick="clearFilter()">해제</button></div>';
+
+  // 해당 데이터 렌더링
+  var container = document.getElementById('clientList');
+  var hint = document.getElementById('searchHint');
+  hint.style.display = 'none';
+
+  if (type === 'today') {
+    renderGrouped(allData.today_work, container, 'today');
+  } else if (type === 'waiting') {
+    renderGrouped(allData.waiting, container, 'waiting');
+  } else if (type === 'done') {
+    renderCompletedByDate(container);
+  } else if (type === 'urgent') {
+    renderGrouped(urgentItems, container, 'today');
+  } else if (type === 'dataReady') {
+    renderGrouped(dataReadyItems, container, 'today');
+  } else if (type === 'clients') {
+    // 전체 진행 건 (금일+대기 합쳐서) 거래처별
+    var all = allData.today_work.concat(allData.waiting);
+    renderGrouped(all, container, 'waiting');
+  }
+
+  // 목록으로 스크롤
+  document.getElementById('clientList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function clearFilter() {
+  currentFilter = null;
+  document.getElementById('filterBanner').style.display = 'none';
+  document.getElementById('tabBar').style.opacity = '1';
+  document.getElementById('tabBar').style.pointerEvents = 'auto';
+  var cards = document.querySelectorAll('.stat-card');
+  cards.forEach(function(c) { c.classList.remove('selected'); });
+  renderList();
+}
+
+function switchTab(tab) {
+  if (currentFilter) clearFilter();
+  currentTab = tab;
+  var tabs = {today: 'tabToday', waiting: 'tabWaiting', done: 'tabDone'};
+  var activeClass = {today: 'active-today', waiting: 'active', done: 'active-done'};
+  Object.keys(tabs).forEach(function(t) {
+    document.getElementById(tabs[t]).className = 'tab-btn' + (t === tab ? ' ' + activeClass[t] : '');
+  });
+  renderList();
+}
+
+function renderList() {
+  if (currentFilter) return; // 필터 모드에서는 탭 렌더링 무시
+
+  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  var container = document.getElementById('clientList');
+  var hint = document.getElementById('searchHint');
+
+  if (q.length > 0) {
+    renderSearchResults(q, container, hint);
+  } else {
+    hint.style.display = 'none';
+    if (currentTab === 'done') {
+      renderCompletedByDate(container);
+    } else {
+      var items = currentTab === 'today' ? allData.today_work : allData.waiting;
+      var type = currentTab === 'today' ? 'today' : 'waiting';
+      renderGrouped(items, container, type);
+    }
+  }
+}
+
+function renderSearchResults(q, container, hint) {
+  if (currentFilter) clearFilter();
+
+  var todayM = allData.today_work.filter(matchQ(q));
+  var waitM = allData.waiting.filter(matchQ(q));
+  var doneM = allData.completed.filter(matchQ(q));
+
+  hint.style.display = 'block';
+  hint.textContent = '검색 결과: 금일 작업 예정 ' + todayM.length + '건, 대기 ' + waitM.length + '건, 완료 ' + doneM.length + '건';
+
+  if (todayM.length + waitM.length + doneM.length === 0) {
+    container.innerHTML = '<div class="no-result"><div class="icon">?</div><div class="text">\'' + esc(q) + '\' 검색 결과가 없습니다</div></div>';
+    return;
+  }
+
+  var html = '';
+  if (todayM.length) html += renderGroupedHtml(todayM, 'today', true);
+  if (waitM.length) html += renderGroupedHtml(waitM, 'waiting', true);
+  if (doneM.length) html += renderGroupedHtml(doneM, 'done', true);
+  container.innerHTML = html;
+}
+
+function matchQ(q) {
+  return function(item) {
+    return item.client.toLowerCase().indexOf(q) !== -1 ||
+           item.product.toLowerCase().indexOf(q) !== -1;
+  };
+}
+
+function renderCompletedByDate(container) {
+  if (!allData.completed.length) {
+    container.innerHTML = '<div class="no-result"><div class="text">완료된 작업이 없습니다</div></div>';
+    return;
+  }
+  var byDate = {};
+  allData.completed.forEach(function(item) {
+    var d = item.completed_date || '날짜 미상';
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(item);
+  });
+  var html = '';
+  Object.keys(byDate).sort().reverse().forEach(function(date) {
+    html += '<div class="date-divider"><span>' + date + ' 완료</span><span class="date-count">' + byDate[date].length + '건</span></div>';
+    html += renderGroupedHtml(byDate[date], 'done', true);
+  });
+  container.innerHTML = html;
+}
+
+function renderGrouped(items, container, type) {
+  if (!items.length) {
+    var msgs = {today: '금일 작업 예정이 없습니다', waiting: '작업 대기 건이 없습니다'};
+    container.innerHTML = '<div class="no-result"><div class="text">' + (msgs[type] || '항목이 없습니다') + '</div></div>';
+    return;
+  }
+  container.innerHTML = renderGroupedHtml(items, type, false);
+}
+
+function renderGroupedHtml(items, type, forceExpand) {
+  var groups = {};
+  items.forEach(function(item) {
+    if (!groups[item.client]) groups[item.client] = [];
+    groups[item.client].push(item);
+  });
+  var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
+
+  var headerClass = {today: 'header-today', waiting: 'header-waiting', done: 'header-done'}[type];
+  var tagClass = {today: 'tag-today', waiting: 'tag-waiting', done: 'tag-done'}[type];
+  var tagText = {today: '금일 작업 예정', waiting: '작업 대기', done: '완료'}[type];
+  var isExpanded = forceExpand || sorted.length <= 3;
+
+  var html = '';
+  sorted.forEach(function(entry) {
+    var client = entry[0], citems = entry[1];
+    html += '<div class="client-group">';
+    html += '<div class="client-header ' + headerClass + '" onclick="toggleGroup(this)">';
+    html += '<span>' + esc(client) + '</span>';
+    html += '<span class="count">' + citems.length + '건</span></div>';
+    html += '<div class="client-items' + (isExpanded ? '' : ' collapsed') + '">';
+
+    citems.forEach(function(item) {
+      html += '<div class="item-card' + (type === 'done' ? ' completed-item' : '') + '">';
+      html += '<div class="item-product">' + esc(item.product) + '</div>';
+      html += '<div class="item-details">';
+
+      // 상태 뱃지 — 아이템 자체 상태 (검색에서 혼합될 때)
+      var itemTag = tagClass, itemText = tagText;
+      if (item.is_today_work === true && type !== 'done') {
+        itemTag = 'tag-today'; itemText = '금일 작업 예정';
+      } else if (item.is_today_work === false && type !== 'done') {
+        itemTag = 'tag-waiting'; itemText = '작업 대기';
+      }
+      html += '<span class="item-tag ' + itemTag + '">' + itemText + '</span>';
+
+      // 설비
+      if (item.equipment && item.equipment !== '-') {
+        html += '<span class="item-tag equipment">' + esc(item.equipment) + '</span>';
+      }
+
+      // 데이터 상태
+      if (type !== 'done') {
+        if (item.data_status === '완료') {
+          html += '<span class="item-tag status-data-done">인쇄데이터 준비완료</span>';
+        } else if (item.data_status !== '-') {
+          html += '<span class="item-tag status-data-wait">데이터 ' + esc(item.data_status) + '</span>';
+        }
+      }
+
+      // 납기
+      if (item.deadline && item.deadline !== '-') {
+        var isUrgent = false;
+        if (type !== 'done') {
+          var diff = (new Date(item.deadline) - new Date()) / 86400000;
+          isUrgent = diff <= 3 && diff >= -1;
+        }
+        html += '<span class="item-tag ' + (isUrgent ? 'deadline-urgent' : 'deadline') + '">';
+        html += '납기 ' + esc(item.deadline) + (isUrgent ? ' !' : '') + '</span>';
+      }
+
+      // 통수
+      if (item.quantity && item.quantity !== '-') {
+        html += '<span class="item-tag">통수 ' + esc(item.quantity) + '</span>';
+      }
+
+      // 구분
+      if (item.category && item.category !== '-') {
+        html += '<span class="item-tag">' + esc(item.category) + '</span>';
+      }
+
+      // 후가공
+      if (item.post_process && item.post_process !== '-') {
+        html += '<span class="item-tag">후가공: ' + esc(item.post_process) + '</span>';
+      }
+
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  });
+  return html;
+}
+
+function toggleGroup(header) { header.nextElementSibling.classList.toggle('collapsed'); }
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  if (currentFilter) clearFilter();
+  renderList();
+});
+loadData();
+</script>
+</body>
+</html>
