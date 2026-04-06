@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .bkit/
+
+# 민감 데이터 — 거래처/납기 등 영업정보 포함
+web/data.json
+생산진행현황/

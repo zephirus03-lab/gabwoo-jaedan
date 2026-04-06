@@ -188,9 +188,9 @@ body {
       <div class="number" id="statWaiting">-</div>
       <div class="label">작업 대기</div>
     </div>
-    <div class="stat-card done" onclick="statClick('done')">
-      <div class="number" id="statCompleted">-</div>
-      <div class="label">최근 완료</div>
+    <div class="stat-card done" onclick="statClick('recent')">
+      <div class="number" id="statRecent">-</div>
+      <div class="label">최근 10일 완료</div>
     </div>
   </div>
   <div class="stat-grid" style="grid-template-columns: 1fr 1fr 1fr;">
@@ -224,8 +224,11 @@ body {
   <div class="tab-btn" id="tabWaiting" onclick="switchTab('waiting')">
     작업 대기<span class="tab-count" id="tabWaitingCount"></span>
   </div>
-  <div class="tab-btn" id="tabDone" onclick="switchTab('done')">
-    완료<span class="tab-count" id="tabDoneCount"></span>
+  <div class="tab-btn" id="tabRecent" onclick="switchTab('recent')">
+    최근 10일<span class="tab-count" id="tabRecentCount"></span>
+  </div>
+  <div class="tab-btn" id="tabAll" onclick="switchTab('all')">
+    전체 완료<span class="tab-count" id="tabAllCount"></span>
   </div>
 </div>
 
@@ -267,10 +270,10 @@ function renderDashboard() {
   var s = allData.summary;
   document.getElementById('statToday').textContent = s.today_work;
   document.getElementById('statWaiting').textContent = s.waiting;
-  document.getElementById('statCompleted').textContent = s.completed;
+  document.getElementById('statRecent').textContent = s.recent_completed;
   document.getElementById('statClients').textContent = s.total_clients;
 
-  var allCurrent = allData.today_work.concat(allData.waiting);
+  var allCurrent = (allData.today_work || []).concat(allData.waiting || []);
   urgentItems = [];
   dataReadyItems = [];
   var today = new Date();
@@ -292,7 +295,7 @@ function renderDashboard() {
   entries.forEach(function(e) {
     var pct = Math.round((e[1] / max) * 100);
     h += '<div class="chart-bar-wrap"><div class="chart-bar-label"><span>' + esc(e[0]) +
-      '</span><span>' + e[1] + '건</span></div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:' +
+      '</span><span>' + esc(e[1]) + '건</span></div><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:' +
       pct + '%"></div></div></div>';
   });
   document.getElementById('clientChart').innerHTML = h;
@@ -302,7 +305,8 @@ function renderTabs() {
   var s = allData.summary;
   document.getElementById('tabTodayCount').textContent = s.today_work;
   document.getElementById('tabWaitingCount').textContent = s.waiting;
-  document.getElementById('tabDoneCount').textContent = s.completed;
+  document.getElementById('tabRecentCount').textContent = s.recent_completed;
+  document.getElementById('tabAllCount').textContent = s.all_completed;
 }
 
 // 대시보드 카드 클릭
@@ -328,7 +332,7 @@ function statClick(type) {
   var filterNames = {
     today: '금일 작업 예정',
     waiting: '작업 대기',
-    done: '최근 완료',
+    recent: '최근 10일 완료',
     urgent: '납기 임박 (3일 이내)',
     dataReady: '인쇄데이터 준비완료',
     clients: '거래처별 현황'
@@ -347,8 +351,8 @@ function statClick(type) {
     renderGrouped(allData.today_work, container, 'today');
   } else if (type === 'waiting') {
     renderGrouped(allData.waiting, container, 'waiting');
-  } else if (type === 'done') {
-    renderCompletedByDate(container);
+  } else if (type === 'recent') {
+    renderCompletedByDate(container, allData.recent_completed);
   } else if (type === 'urgent') {
     renderGrouped(urgentItems, container, 'today');
   } else if (type === 'dataReady') {
@@ -376,8 +380,8 @@ function clearFilter() {
 function switchTab(tab) {
   if (currentFilter) clearFilter();
   currentTab = tab;
-  var tabs = {today: 'tabToday', waiting: 'tabWaiting', done: 'tabDone'};
-  var activeClass = {today: 'active-today', waiting: 'active', done: 'active-done'};
+  var tabs = {today: 'tabToday', waiting: 'tabWaiting', recent: 'tabRecent', all: 'tabAll'};
+  var activeClass = {today: 'active-today', waiting: 'active', recent: 'active-done', all: 'active-done'};
   Object.keys(tabs).forEach(function(t) {
     document.getElementById(tabs[t]).className = 'tab-btn' + (t === tab ? ' ' + activeClass[t] : '');
   });
@@ -395,8 +399,10 @@ function renderList() {
     renderSearchResults(q, container, hint);
   } else {
     hint.style.display = 'none';
-    if (currentTab === 'done') {
-      renderCompletedByDate(container);
+    if (currentTab === 'recent') {
+      renderCompletedByDate(container, allData.recent_completed);
+    } else if (currentTab === 'all') {
+      renderCompletedByDate(container, allData.all_completed);
     } else {
       var items = currentTab === 'today' ? allData.today_work : allData.waiting;
       var type = currentTab === 'today' ? 'today' : 'waiting';
@@ -410,12 +416,17 @@ function renderSearchResults(q, container, hint) {
 
   var todayM = allData.today_work.filter(matchQ(q));
   var waitM = allData.waiting.filter(matchQ(q));
-  var doneM = allData.completed.filter(matchQ(q));
+  var recentM = allData.recent_completed.filter(matchQ(q));
+  var allM = allData.all_completed.filter(matchQ(q));
+  // 전체에서 최근10일 제외한 나머지
+  var olderM = allM.filter(function(item) {
+    return !recentM.some(function(r) { return r.client === item.client && r.product === item.product && r.completed_date === item.completed_date; });
+  });
 
   hint.style.display = 'block';
-  hint.textContent = '검색 결과: 금일 작업 예정 ' + todayM.length + '건, 대기 ' + waitM.length + '건, 완료 ' + doneM.length + '건';
+  hint.textContent = '검색 결과: 금일 예정 ' + todayM.length + '건, 대기 ' + waitM.length + '건, 최근10일 완료 ' + recentM.length + '건, 전체 완료 ' + allM.length + '건';
 
-  if (todayM.length + waitM.length + doneM.length === 0) {
+  if (todayM.length + waitM.length + allM.length === 0) {
     container.innerHTML = '<div class="no-result"><div class="icon">?</div><div class="text">\'' + esc(q) + '\' 검색 결과가 없습니다</div></div>';
     return;
   }
@@ -423,7 +434,8 @@ function renderSearchResults(q, container, hint) {
   var html = '';
   if (todayM.length) html += renderGroupedHtml(todayM, 'today', true);
   if (waitM.length) html += renderGroupedHtml(waitM, 'waiting', true);
-  if (doneM.length) html += renderGroupedHtml(doneM, 'done', true);
+  if (recentM.length) html += '<div class="date-divider"><span>최근 10일 완료</span><span class="date-count">' + recentM.length + '건</span></div>' + renderGroupedHtml(recentM, 'done', true);
+  if (olderM.length) html += '<div class="date-divider"><span>이전 완료</span><span class="date-count">' + olderM.length + '건</span></div>' + renderGroupedHtml(olderM, 'done', true);
   container.innerHTML = html;
 }
 
@@ -434,13 +446,13 @@ function matchQ(q) {
   };
 }
 
-function renderCompletedByDate(container) {
-  if (!allData.completed.length) {
+function renderCompletedByDate(container, items) {
+  if (!items || !items.length) {
     container.innerHTML = '<div class="no-result"><div class="text">완료된 작업이 없습니다</div></div>';
     return;
   }
   var byDate = {};
-  allData.completed.forEach(function(item) {
+  items.forEach(function(item) {
     var d = item.completed_date || '날짜 미상';
     if (!byDate[d]) byDate[d] = [];
     byDate[d].push(item);
