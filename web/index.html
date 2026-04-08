@@ -417,6 +417,22 @@ body {
 }
 .auth-btn:active { opacity: 0.85; }
 .auth-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  user-select: none;
+}
+.remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1565c0;
+  cursor: pointer;
+}
 .auth-divider {
   display: flex;
   align-items: center;
@@ -537,6 +553,10 @@ body {
         <label>비밀번호</label>
         <input type="password" id="loginPassword" placeholder="비밀번호">
       </div>
+      <label class="remember-me">
+        <input type="checkbox" id="rememberMe" checked>
+        <span>로그인 유지 (같은 브라우저에서 자동 로그인)</span>
+      </label>
       <button class="auth-btn" onclick="handleLogin()">로그인</button>
       <div class="auth-divider"><span>OR</span></div>
       <div class="auth-toggle">
@@ -1015,11 +1035,18 @@ document.getElementById('searchInput').addEventListener('input', function() {
 var SUPABASE_URL = 'https://btbqzbrtsmwoolurpqgx.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnF6YnJ0c213b29sdXJwcWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDM4MDUsImV4cCI6MjA5MTAxOTgwNX0.OPGiHDcCCWvHeOgjDhhwlPmDYg7jGwR0ZWLJrbycwi4';
 
+// "로그인 유지" 플래그 (기본값: true)
+// - true: localStorage → 브라우저 닫아도 유지
+// - false: sessionStorage → 탭 닫으면 로그아웃
+var REMEMBER_KEY = 'gabwoo-remember';
+var rememberFlag = window.localStorage.getItem(REMEMBER_KEY) !== 'false';
+var authStorage = rememberFlag ? window.localStorage : window.sessionStorage;
+
 var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    storage: window.localStorage,
+    storage: authStorage,
     storageKey: 'gabwoo-auth',
     detectSessionInUrl: false
   }
@@ -1060,6 +1087,7 @@ async function handleLogin() {
   hideMessages();
   var email = document.getElementById('loginEmail').value.trim();
   var password = document.getElementById('loginPassword').value;
+  var remember = document.getElementById('rememberMe').checked;
 
   if (!email || !password) { showError('이메일과 비밀번호를 입력해주세요'); return; }
 
@@ -1068,6 +1096,16 @@ async function handleLogin() {
   if (res.error) {
     showError('이메일 또는 비밀번호가 올바르지 않습니다');
     return;
+  }
+
+  // 체크박스 상태가 현재 플래그와 다르면 세션을 올바른 스토리지로 이동
+  if (remember !== rememberFlag) {
+    var sessionData = authStorage.getItem('gabwoo-auth');
+    window.localStorage.removeItem('gabwoo-auth');
+    window.sessionStorage.removeItem('gabwoo-auth');
+    var targetStorage = remember ? window.localStorage : window.sessionStorage;
+    if (sessionData) targetStorage.setItem('gabwoo-auth', sessionData);
+    window.localStorage.setItem(REMEMBER_KEY, remember ? 'true' : 'false');
   }
 
   // 로그인 후 승인 여부 확인
