@@ -982,6 +982,7 @@ body {
 }
 #sectorPackage .badge.printing { background: #dbeafe; color: #1565c0; }
 #sectorPackage .badge.shipping { background: #fff3e0; color: #e65100; }
+#sectorPackage .badge.machine { background: #f3e5f5; color: #6a1b9a; font-weight: 700; }
 #sectorPackage .card-client { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 3px; }
 #sectorPackage .card-product {
   font-size: 14px;
@@ -2639,6 +2640,7 @@ function renderPkgOrderCard(order) {
   html += '<div class="card-header">';
   html += '<div class="mgmt-no">' + escPkg(order.mgmt_no || '') + '</div>';
   html += '<div class="card-badges">';
+  if (order.machine) html += '<span class="badge machine">' + escPkg(order.machine) + '</span>';
   if (order.badges && order.badges.printing_today) html += '<span class="badge printing">오늘 인쇄 중</span>';
   if (order.badges && order.badges.shipping_today) html += '<span class="badge shipping">출고 예정</span>';
   html += '</div></div>';
@@ -2806,10 +2808,15 @@ function pkgRenderFiltered(type) {
           process_spec: p.process || '',
           progress: {},
           badges: { printing_today: true, shipping_today: false },
+          machine: p.machine || null,
           _isPrintingOnly: true
         });
       }
     });
+    // 매칭된 orders에도 printings에서 machine 정보 보강 (이미 mergeBadges에서 했지만 안전망)
+    var machineMap = {};
+    (pkgData.printings_today || []).forEach(function(p) { if (p.mgmt_no && p.machine) machineMap[p.mgmt_no] = p.machine; });
+    items.forEach(function(o) { if (!o.machine && machineMap[o.mgmt_no]) o.machine = machineMap[o.mgmt_no]; });
   } else if (type === 'completed_7d') {
     var chart = (pkgData.summary && pkgData.summary.recent_7d_chart) || {};
     var validDates = {};
@@ -3150,7 +3157,8 @@ function pkgJsParsePrintingsToday(workbook) {
   var ws = workbook.Sheets['인쇄일정관리'];
   var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: false, raw: true });
 
-  var headerIdx = -1;
+  // 첫 번째 헤더 행(컬럼명) 탐지 — 모든 호기 섹션이 동일한 컬럼 구조 사용
+  var firstHeaderIdx = -1;
   var headerMap = {};
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
@@ -3160,7 +3168,7 @@ function pkgJsParsePrintingsToday(workbook) {
       if (row[j] != null && String(row[j]).indexOf('계획일') !== -1) { found = true; break; }
     }
     if (found) {
-      headerIdx = i;
+      firstHeaderIdx = i;
       for (var k = 0; k < row.length; k++) {
         if (row[k] != null) {
           var key = String(row[k]).trim();
@@ -3170,7 +3178,7 @@ function pkgJsParsePrintingsToday(workbook) {
       break;
     }
   }
-  if (headerIdx < 0) return [];
+  if (firstHeaderIdx < 0) return [];
 
   function idx() {
     for (var a = 0; a < arguments.length; a++) {
@@ -3185,13 +3193,45 @@ function pkgJsParsePrintingsToday(workbook) {
       iDetail = idx('공정상세'), iDeadline = idx('납품예정', '납기예정', '납기'),
       iQty = idx('수주량'), iSets = idx('벌수'), iNet = idx('정미량'), iNote = idx('비고');
 
+  // 호기 섹션 헤더 패턴: A열에 "인쇄N호계획" 형식
+  var machineRe = /인쇄\s*(\d+)호계획/;
+
   var todayStr = pkgJsDateStr(new Date());
   var out = [];
-  for (var i = headerIdx + 1; i < rows.length; i++) {
+  var currentMachine = null;
+
+  // 첫 번째 호기 헤더 찾기 (보통 첫 번째 header 행 바로 앞)
+  for (var i2 = 0; i2 <= firstHeaderIdx; i2++) {
+    var row0 = rows[i2];
+    if (!row0 || !row0[0]) continue;
+    var m0 = String(row0[0]).match(machineRe);
+    if (m0) currentMachine = m0[1] + '호기';
+  }
+
+  for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
-    if (!row || iPlan < 0 || iPlan >= row.length) continue;
+    if (!row) continue;
+
+    // 호기 섹션 헤더 감지
+    if (row[0] != null) {
+      var m = String(row[0]).match(machineRe);
+      if (m) {
+        currentMachine = m[1] + '호기';
+        continue;
+      }
+    }
+
+    // 헤더 행 스킵 (반복 헤더)
+    var isHeader = false;
+    for (var j = 0; j < row.length; j++) {
+      if (row[j] != null && String(row[j]).indexOf('계획일') !== -1) { isHeader = true; break; }
+    }
+    if (isHeader) continue;
+
+    if (iPlan < 0 || iPlan >= row.length) continue;
     var planDateStr = pkgJsDateStr(row[iPlan]);
     if (planDateStr !== todayStr) continue;
+
     function get(ix) { return (ix < 0 || ix >= row.length) ? null : row[ix]; }
     out.push({
       plan_date: planDateStr,
@@ -3206,7 +3246,8 @@ function pkgJsParsePrintingsToday(workbook) {
       qty: pkgJsInt(get(iQty)),
       sets: pkgJsInt(get(iSets)),
       net_qty: pkgJsInt(get(iNet)),
-      note: pkgJsText(get(iNote))
+      note: pkgJsText(get(iNote)),
+      machine: currentMachine  // 호기 정보
     });
   }
   return out;
@@ -3285,15 +3326,22 @@ function pkgJsParseShipmentsToday(workbook) {
 }
 
 function pkgJsMergeBadges(orders, printings, shipments) {
-  var printingMgmt = {};
-  printings.forEach(function(p) { if (p.mgmt_no) printingMgmt[p.mgmt_no] = true; });
+  // mgmt_no → 인쇄 정보(machine 포함) 맵
+  var printingByMgmt = {};
+  printings.forEach(function(p) {
+    if (p.mgmt_no) printingByMgmt[p.mgmt_no] = p;
+  });
   var shipProducts = {};
   shipments.forEach(function(s) {
     var n = pkgJsNormProduct(s.product);
     if (n) shipProducts[n] = true;
   });
   orders.forEach(function(o) {
-    if (printingMgmt[o.mgmt_no]) o.badges.printing_today = true;
+    var pInfo = printingByMgmt[o.mgmt_no];
+    if (pInfo) {
+      o.badges.printing_today = true;
+      if (pInfo.machine) o.machine = pInfo.machine;  // 호기 부착
+    }
     var n = pkgJsNormProduct(o.product);
     if (n && shipProducts[n]) o.badges.shipping_today = true;
   });
