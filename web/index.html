@@ -1218,11 +1218,14 @@ async function loadApprovedUsers() {
     html += '<div style="padding:10px 16px;background:white;margin:0 16px 8px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">';
     html += '<div><span style="font-weight:600;font-size:14px;">' + esc(user.email) + '</span>' + adminBadge + '</div>';
     if (!isMe) {
+      html += '<div style="display:flex;gap:4px;">';
       if (user.is_admin) {
         html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', false)" style="background:#888;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 해제</button>';
       } else {
         html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', true)" style="background:#1565c0;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 지정</button>';
       }
+      html += '<button onclick="deleteUser(\'' + esc(user.email) + '\')" style="background:#c62828;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">삭제</button>';
+      html += '</div>';
     } else {
       html += '<span style="font-size:11px;color:#888;">나</span>';
     }
@@ -1238,6 +1241,22 @@ async function toggleAdmin(email, makeAdmin) {
     return;
   }
   loadApprovedUsers();
+}
+
+async function deleteUser(email) {
+  if (!confirm(email + ' 사용자를 삭제하시겠습니까?\n\n해당 사용자는 더 이상 로그인할 수 없습니다.')) return;
+
+  // approved_users에서 삭제 (RLS로 관리자만 가능)
+  var res1 = await sb.from('approved_users').delete().eq('email', email);
+  if (res1.error) {
+    alert('삭제 실패: ' + res1.error.message);
+    return;
+  }
+  // signup_requests에서도 정리 (재가입 가능하도록)
+  await sb.from('signup_requests').delete().eq('email', email);
+
+  loadApprovedUsers();
+  checkPendingBadge();
 }
 
 var isAdmin = false;
