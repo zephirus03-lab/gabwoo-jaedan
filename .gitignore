@@ -8,4 +8,12 @@ web/data.json
 web/data_package.json
 생산진행현황/
 생산진행현황_패키지/
+출판_생산 진행 현황/
+패키지_생산진행현황/
+AX 전환 계획/
+재단지시서_2026년.xlsx
 .vercel
+.claude/agent-memory/
+
+# 작업용 임시 파일
+web_deploy/

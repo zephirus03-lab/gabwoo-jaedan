@@ -15,7 +15,28 @@
       "Bash(git rm:*)",
       "Bash(python3 -c ':*)",
       "Bash(supabase --version)",
-      "Bash(supabase login:*)"
+      "Bash(supabase login:*)",
+      "Bash(npm i:*)",
+      "Bash(vercel --yes)",
+      "Bash(vercel login:*)",
+      "Bash(vercel --yes --prod)",
+      "Bash(vercel deploy:*)",
+      "Bash(vercel inspect:*)",
+      "Bash(vercel logs:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://gabwoo.vercel.app)",
+      "Bash(python3 -c \"import docx; print\\('ok'\\)\")",
+      "Bash(pip3 install:*)",
+      "Bash(open \"/Users/jack/dev/gabwoo/전체 데이터/\")",
+      "Bash(open \"전체 데이터/\")",
+      "Bash(npx vercel:*)",
+      "Bash(git config:*)",
+      "Bash(git commit:*)",
+      "Bash(git filter-branch -f --env-filter ':*)",
+      "Bash(git stash:*)",
+      "Bash(gh api:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('login:', d.get\\('login'\\)\\); print\\('email:', d.get\\('email'\\)\\); print\\('id:', d.get\\('id'\\)\\)\")",
+      "Bash(git restore:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

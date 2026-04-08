@@ -526,6 +526,24 @@ body {
 .upload-status.success { color: #166534; }
 .upload-file-input { display: none; }
 
+/* 업로드 진행률 바 */
+.upload-progress {
+  margin-top: 10px;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  display: none;
+}
+.upload-progress.active { display: block; }
+.upload-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1565c0, #1e88e5);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    SECTOR TOGGLE (출판 / 패키지 전환)
 ═══════════════════════════════════════════════════════════════ */
@@ -1189,6 +1207,7 @@ body {
     <div class="upload-title">재단지시서 업데이트</div>
     <input type="file" id="fileInput" class="upload-file-input" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
     <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">엑셀 파일 선택 및 업로드</button>
+    <div class="upload-progress" id="uploadProgress"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
     <div class="upload-status" id="uploadStatus"></div>
   </div>
 </div>
@@ -1956,24 +1975,49 @@ async function handleFileSelect(event) {
 
   var btn = document.getElementById('uploadBtn');
   var status = document.getElementById('uploadStatus');
+  var progress = document.getElementById('uploadProgress');
+  var progressFill = document.getElementById('uploadProgressFill');
+
   btn.disabled = true;
   btn.textContent = '변환 중...';
   btn.className = 'upload-btn uploading';
   status.className = 'upload-status';
-  status.textContent = '엑셀 파일을 읽는 중...';
+  progress.className = 'upload-progress active';
+  progressFill.style.width = '0%';
+
+  function setProgress(pct, text) {
+    progressFill.style.width = pct + '%';
+    status.textContent = text;
+  }
+
+  // UI에 그릴 시간을 주기 위한 yield
+  function nextTick() {
+    return new Promise(function(r) { setTimeout(r, 0); });
+  }
 
   try {
-    var arrayBuffer = await file.arrayBuffer();
-    var workbook = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
+    setProgress(5, '엑셀 파일을 읽는 중...');
+    await nextTick();
 
-    status.textContent = '데이터 변환 중...';
-    var jsonData = convertExcel(workbook);
+    var arrayBuffer = await file.arrayBuffer();
+    setProgress(15, '엑셀 파싱 중...');
+    await nextTick();
+
+    var workbook = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
+    setProgress(25, '데이터 변환 중...');
+    await nextTick();
+
+    var jsonData = await convertExcel(workbook, function(pct, text) {
+      // 25% ~ 75% 구간을 변환에 할당
+      setProgress(25 + Math.round(pct * 0.5), text);
+    });
 
     if (!jsonData || jsonData.today_work.length + jsonData.waiting.length === 0) {
       throw new Error('변환된 데이터가 없습니다. 올바른 재단지시서 파일인지 확인해주세요.');
     }
 
-    status.textContent = '서버에 업로드 중...';
+    setProgress(80, '서버에 업로드 중...');
+    await nextTick();
 
     // 업로드한 사람 기록
     var session = await sb.auth.getSession();
@@ -1990,12 +2034,12 @@ async function handleFileSelect(event) {
 
     if (uploadRes.error) throw uploadRes.error;
 
-    // 데이터 검증
-    status.textContent = '데이터 검증 중...';
+    setProgress(90, '데이터 검증 중...');
+    await nextTick();
     var verifyResult = verifyData(workbook, jsonData);
 
+    setProgress(100, '업데이트 완료! 금일 작업 예정 ' + jsonData.summary.today_work + '건, 작업 대기 ' + jsonData.summary.waiting + '건, 완료 ' + jsonData.summary.recent_completed + '건');
     status.className = 'upload-status success';
-    status.textContent = '업데이트 완료! 금일 작업 예정 ' + jsonData.summary.today_work + '건, 작업 대기 ' + jsonData.summary.waiting + '건, 완료 ' + jsonData.summary.recent_completed + '건';
 
     if (!verifyResult.passed) {
       status.className = 'upload-status error';
@@ -2007,9 +2051,13 @@ async function handleFileSelect(event) {
     renderAll();
     showVerifyBadge(verifyResult);
 
+    // 2초 후 진행률 바 숨김
+    setTimeout(function() { progress.className = 'upload-progress'; }, 2000);
+
   } catch(e) {
     status.className = 'upload-status error';
     status.textContent = '오류: ' + e.message;
+    progress.className = 'upload-progress';
   }
 
   btn.disabled = false;
@@ -2018,7 +2066,10 @@ async function handleFileSelect(event) {
   event.target.value = '';
 }
 
-function convertExcel(workbook) {
+async function convertExcel(workbook, onProgress) {
+  if (!onProgress) onProgress = function() {};
+  function nextTick() { return new Promise(function(r) { setTimeout(r, 0); }); }
+
   var ws = workbook.Sheets['재단지시서'];
   if (!ws) throw new Error('"재단지시서" 시트를 찾을 수 없습니다.');
 
@@ -2184,37 +2235,19 @@ function convertExcel(workbook) {
   }
 
   var latestDate = formatDate(latestSection.date);
+  onProgress(5, '오늘 섹션 파싱 중...');
+  await nextTick();
   var currentItems = parseSection(latestIdx, true);
 
-  // 완료 건 추출 (연쇄 비교)
+  // 완료 건 추출 (연쇄 비교) — 캐싱 + 비동기
   var currentKeys = {};
   currentItems.forEach(function(i) { currentKeys[i.client + '|||' + i.product] = true; });
 
-  function extractCompleted(maxSteps) {
-    var items = [];
-    var seen = {};
-    for (var step = 0; step < Math.min(maxSteps, latestIdx); step++) {
-      var newerIdx = latestIdx - step;
-      var olderIdx = newerIdx - 1;
-      if (olderIdx < 0) break;
-
-      var newerDate = formatDate(sections[newerIdx].date);
-      var olderItems = parseSection(olderIdx, false);
-      var newerItems = parseSection(newerIdx, false);
-      var newerKeys = {};
-      newerItems.forEach(function(i) { newerKeys[i.client + '|||' + i.product] = true; });
-
-      olderItems.forEach(function(item) {
-        var key = item.client + '|||' + item.product;
-        if (!newerKeys[key] && !currentKeys[key] && !seen[key]) {
-          item.completed_between = formatDate(sections[olderIdx].date) + ' → ' + newerDate;
-          item.completed_date = newerDate;
-          items.push(item);
-          seen[key] = true;
-        }
-      });
-    }
-    return items;
+  // 섹션 파싱 결과 캐싱
+  var parseCache = {};
+  function getParsed(idx) {
+    if (!parseCache[idx]) parseCache[idx] = parseSection(idx, false);
+    return parseCache[idx];
   }
 
   // 10일 범위 계산
@@ -2227,11 +2260,63 @@ function convertExcel(workbook) {
     lookback10d = s + 1;
   }
 
-  var recentCompleted = extractCompleted(lookback10d);
+  // 모든 섹션 한 번만 파싱하면서 점진적으로 완료 추출
+  // 최근 10일분과 전체분을 동시에 누적
+  var recentCompleted = [];
+  var allCompleted = [];
+  var seenAll = {};
+  var seenRecent = {};
+  var totalSteps = latestIdx;
+
+  for (var step = 0; step < totalSteps; step++) {
+    var newerIdx = latestIdx - step;
+    var olderIdx = newerIdx - 1;
+    if (olderIdx < 0) break;
+
+    var newerDate = formatDate(sections[newerIdx].date);
+    var olderItems = getParsed(olderIdx);
+    var newerItems = getParsed(newerIdx);
+    var newerKeys = {};
+    for (var ni = 0; ni < newerItems.length; ni++) {
+      newerKeys[newerItems[ni].client + '|||' + newerItems[ni].product] = true;
+    }
+
+    var isRecent = step < lookback10d;
+
+    for (var oi = 0; oi < olderItems.length; oi++) {
+      var item = olderItems[oi];
+      var key = item.client + '|||' + item.product;
+      if (newerKeys[key] || currentKeys[key]) continue;
+
+      if (!seenAll[key]) {
+        // 완료된 건 — 메타데이터 추가
+        var completedItem = Object.assign({}, item, {
+          completed_between: formatDate(sections[olderIdx].date) + ' → ' + newerDate,
+          completed_date: newerDate
+        });
+        allCompleted.push(completedItem);
+        seenAll[key] = true;
+
+        if (isRecent && !seenRecent[key]) {
+          recentCompleted.push(completedItem);
+          seenRecent[key] = true;
+        }
+      }
+    }
+
+    // 진행률 업데이트 + UI yield (5스텝마다)
+    if (step % 5 === 0 || step === totalSteps - 1) {
+      var pct = 10 + Math.round((step / totalSteps) * 80);
+      onProgress(pct, '완료 이력 분석 중... (' + (step + 1) + '/' + totalSteps + '일)');
+      await nextTick();
+    }
+  }
+
+  onProgress(95, '데이터 정리 중...');
+  await nextTick();
+
   recentCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
   recentCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
-
-  var allCompleted = extractCompleted(latestIdx);
   allCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
   allCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
 
@@ -2503,14 +2588,27 @@ function handlePkgSearch(q) {
   var hint = document.getElementById('pkgSearchHint');
   var resultHint = document.getElementById('pkgResultHint');
   var orderList = document.getElementById('pkgOrderList');
+  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
 
   if (q.length < 1) {
     hint.style.display = 'none';
     resultHint.style.display = 'block';
     orderList.innerHTML = '';
+    // 검색어 비우면 정적 섹션 복원
+    if (shipmentSection) shipmentSection.style.display = '';
     return;
   }
   resultHint.style.display = 'none';
+
+  // 검색 시 KPI 필터 + 정적 출고예정 섹션 숨김 (중복 표시 방지)
+  if (pkgCurrentFilter) {
+    pkgCurrentFilter = null;
+    var cards = document.querySelectorAll('#sectorPackage .kpi-card');
+    cards.forEach(function(c) { c.classList.remove('selected'); });
+    var banner = document.getElementById('pkgFilterBanner');
+    if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+  }
+  if (shipmentSection) shipmentSection.style.display = 'none';
 
   if (!pkgData || !pkgData.orders) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-text">데이터 없음</div></div>';
@@ -2650,6 +2748,10 @@ function pkgKpiClick(type, el) {
   document.getElementById('pkgSearchHint').style.display = 'none';
   document.getElementById('pkgResultHint').style.display = 'none';
 
+  // 필터 모드에서는 정적 "오늘 출고 예정" 섹션 숨김 (중복 표시 방지)
+  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
+  if (shipmentSection) shipmentSection.style.display = 'none';
+
   // 필터 배너
   var meta = PKG_FILTER_META[type];
   var banner = document.getElementById('pkgFilterBanner');
@@ -2670,6 +2772,10 @@ function pkgClearFilter() {
   if (orderList) orderList.innerHTML = '';
   var resultHint = document.getElementById('pkgResultHint');
   if (resultHint) resultHint.style.display = 'block';
+
+  // 필터 해제 시 정적 "오늘 출고 예정" 섹션 복원
+  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
+  if (shipmentSection) shipmentSection.style.display = '';
 }
 
 function pkgRenderFiltered(type) {
