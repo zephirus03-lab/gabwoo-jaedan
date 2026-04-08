@@ -664,7 +664,7 @@ body {
 #sectorPackage .kpi-card:active { transform: scale(0.96); }
 #sectorPackage .kpi-card.selected.navy   { box-shadow: 0 0 0 2px #1a1a2e, 0 4px 12px rgba(26,26,46,0.2); }
 #sectorPackage .kpi-card.selected.blue   { box-shadow: 0 0 0 2px #1565c0, 0 4px 12px rgba(21,101,192,0.2); }
-#sectorPackage .kpi-card.selected.orange { box-shadow: 0 0 0 2px #e65100, 0 4px 12px rgba(230,81,0,0.2); }
+#sectorPackage .kpi-card.selected.orange { box-shadow: 0 0 0 2px #0d7377, 0 4px 12px rgba(13,115,119,0.2); }
 #sectorPackage .kpi-card.selected.green  { box-shadow: 0 0 0 2px #2e7d32, 0 4px 12px rgba(46,125,50,0.2); }
 #sectorPackage .kpi-card.selected.red    { box-shadow: 0 0 0 2px #b91c1c, 0 4px 12px rgba(185,28,28,0.2); }
 
@@ -822,8 +822,8 @@ body {
 #sectorPackage .kpi-card.navy .kpi-number  { color: #1a1a2e; }
 #sectorPackage .kpi-card.blue::before  { background: #1565c0; }
 #sectorPackage .kpi-card.blue .kpi-number  { color: #1565c0; }
-#sectorPackage .kpi-card.orange::before { background: #e65100; }
-#sectorPackage .kpi-card.orange .kpi-number { color: #e65100; }
+#sectorPackage .kpi-card.orange::before { background: #0d7377; }
+#sectorPackage .kpi-card.orange .kpi-number { color: #0d7377; }
 #sectorPackage .kpi-card.green::before { background: #2e7d32; }
 #sectorPackage .kpi-card.green .kpi-number { color: #2e7d32; }
 #sectorPackage .kpi-card.red::before { background: #b91c1c; }
@@ -925,7 +925,7 @@ body {
 }
 #sectorPackage .shipment-meta { text-align: right; flex-shrink: 0; margin-left: 12px; }
 #sectorPackage .shipment-qty { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-#sectorPackage .shipment-status { font-size: 11px; color: #e65100; font-weight: 600; margin-top: 2px; }
+#sectorPackage .shipment-status { font-size: 11px; color: #0d7377; font-weight: 600; margin-top: 2px; }
 #sectorPackage .shipment-empty {
   text-align: center;
   padding: 20px;
@@ -1000,7 +1000,7 @@ body {
   white-space: nowrap;
 }
 #sectorPackage .badge.printing { background: #dbeafe; color: #1565c0; }
-#sectorPackage .badge.shipping { background: #fff3e0; color: #e65100; }
+#sectorPackage .badge.shipping { background: #d1f5f4; color: #0d7377; }
 #sectorPackage .badge.machine { background: #f3e5f5; color: #6a1b9a; font-weight: 700; }
 #sectorPackage .badge.stale { background: #ffebee; color: #b91c1c; font-weight: 700; }
 
@@ -1023,7 +1023,7 @@ body {
   background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
 }
 #sectorPackage .pkg-client-header.header-shipping {
-  background: linear-gradient(90deg, #e65100 0%, #f57c00 100%);
+  background: linear-gradient(90deg, #0d7377 0%, #14a085 100%);
 }
 #sectorPackage .shipment-dest {
   font-size: 11px;
@@ -3538,6 +3538,25 @@ function pkgJsParseShipmentsToday(workbook) {
     function get(ix) { return (ix < 0 || ix >= row.length) ? null : row[ix]; }
     var client = pkgJsText(get(iClient));
     if (!client) continue;
+
+    // 데이터 정리:
+    // 1. 따옴표(", 〃, ")만 있는 셀 → 이전 거래처명 상속 (엑셀 ditto 표기)
+    // 2. "합계", "소계", "총계" 같은 합계 행 → 스킵
+    // 3. 거래처명이 매우 짧거나(1글자 이하) 숫자만 → 스킵
+    var clientTrim = client.replace(/\s+/g, '');
+    if (/^["〃"]+$/.test(clientTrim)) {
+      // ditto: 이전 거래처명 사용
+      if (out.length > 0) {
+        client = out[out.length - 1].client;
+      } else {
+        continue; // 첫 행이 ditto면 스킵
+      }
+    } else if (/^(합계|소계|총계|합\s*계|소\s*계|총\s*계)/.test(clientTrim)) {
+      continue; // 합계 행 스킵
+    } else if (clientTrim.length <= 1 || /^\d+$/.test(clientTrim)) {
+      continue; // 너무 짧거나 숫자만
+    }
+
     out.push({
       sheet_date: sheetDateStr,
       client: client,
