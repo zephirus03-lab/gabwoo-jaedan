@@ -778,6 +778,22 @@ body {
 }
 #sectorPackage .pkg-upload-status.error { color: #b91c1c; font-weight: 600; }
 #sectorPackage .pkg-upload-status.success { color: #166534; font-weight: 600; }
+#sectorPackage .pkg-upload-progress {
+  margin-top: 10px;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  display: none;
+}
+#sectorPackage .pkg-upload-progress.active { display: block; }
+#sectorPackage .pkg-upload-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1565c0, #1e88e5);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.2s ease;
+}
 #sectorPackage .kpi-card::before {
   content: '';
   position: absolute;
@@ -1308,6 +1324,7 @@ body {
       <button type="button" class="pkg-upload-btn" id="pkgUploadBtn" onclick="pkgHandleUpload()" disabled>
         변환 및 업로드
       </button>
+      <div class="pkg-upload-progress" id="pkgUploadProgress"><div class="pkg-upload-progress-fill" id="pkgUploadProgressFill"></div></div>
       <div class="pkg-upload-status" id="pkgUploadStatus"></div>
     </div>
   </div>
@@ -2954,6 +2971,9 @@ function pkgMarkFileRow(type, name) {
 async function pkgHandleUpload() {
   var btn = document.getElementById('pkgUploadBtn');
   var status = document.getElementById('pkgUploadStatus');
+  var progress = document.getElementById('pkgUploadProgress');
+  var progressFill = document.getElementById('pkgUploadProgressFill');
+
   if (!pkgUploadFiles.orders || !pkgUploadFiles.printings || !pkgUploadFiles.shipments) {
     status.className = 'pkg-upload-status error';
     status.textContent = '3개 파일을 모두 선택해주세요.';
@@ -2964,15 +2984,33 @@ async function pkgHandleUpload() {
   btn.textContent = '변환 중...';
   btn.className = 'pkg-upload-btn uploading';
   status.className = 'pkg-upload-status';
-  status.textContent = '[1/4] 수주관리 파싱 중...';
+  progress.className = 'pkg-upload-progress active';
+  progressFill.style.width = '0%';
+
+  function setProgress(pct, text) {
+    progressFill.style.width = pct + '%';
+    status.textContent = text;
+  }
+  function nextTick() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
   try {
+    setProgress(5, '[1/4] 수주관리 파싱 준비...');
+    await nextTick();
+
+    setProgress(15, '[1/4] 수주관리 파싱 중...');
+    await nextTick();
     var orders = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
-    status.textContent = '[2/4] 인쇄일정관리 파싱 중...';
+
+    setProgress(35, '[2/4] 인쇄일정관리 파싱 중...');
+    await nextTick();
     var printings = pkgJsParsePrintingsToday(pkgUploadFiles.printings.workbook);
-    status.textContent = '[3/4] 출고리스트 파싱 중...';
+
+    setProgress(55, '[3/4] 출고리스트 파싱 중...');
+    await nextTick();
     var shipments = pkgJsParseShipmentsToday(pkgUploadFiles.shipments.workbook);
 
+    setProgress(70, '데이터 병합 중...');
+    await nextTick();
     pkgJsMergeBadges(orders, printings, shipments);
     var summary = pkgJsComputeSummary(orders, printings, shipments);
 
@@ -2992,7 +3030,8 @@ async function pkgHandleUpload() {
       if (session.data.session) output.uploaded_by = session.data.session.user.email;
     } catch(e) {}
 
-    status.textContent = '[4/4] Supabase Storage 업로드 중...';
+    setProgress(85, '[4/4] Supabase Storage 업로드 중...');
+    await nextTick();
     var jsonBlob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
     var uploadRes = await sb.storage.from('gabwoo-data').upload('data_package.json', jsonBlob, {
       upsert: true,
@@ -3000,8 +3039,8 @@ async function pkgHandleUpload() {
     });
     if (uploadRes.error) throw uploadRes.error;
 
+    setProgress(100, '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건');
     status.className = 'pkg-upload-status success';
-    status.textContent = '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건';
 
     // 화면 새로고침
     pkgData = output;
@@ -3014,10 +3053,14 @@ async function pkgHandleUpload() {
       document.getElementById('pkgFileStatus' + suf).textContent = '⬜';
       document.getElementById('pkgFileRow' + suf).classList.remove('ready');
     });
+
+    // 2초 후 진행률 바 숨김
+    setTimeout(function() { progress.className = 'pkg-upload-progress'; }, 2000);
   } catch(e) {
     console.error(e);
     status.className = 'pkg-upload-status error';
     status.textContent = '❌ 오류: ' + (e.message || e);
+    progress.className = 'pkg-upload-progress';
   }
 
   btn.disabled = false;
