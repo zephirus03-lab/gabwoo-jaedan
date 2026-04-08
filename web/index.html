@@ -2999,7 +2999,13 @@ async function pkgHandleUpload() {
 
     setProgress(15, '[1/4] 수주관리 파싱 중...');
     await nextTick();
-    var orders = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
+    var ordersRaw = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
+
+    setProgress(25, '오래된/취소 건 정리 중...');
+    await nextTick();
+    var cleanResult = pkgJsCleanOrders(ordersRaw);
+    var orders = cleanResult.orders;
+    var cleanStats = cleanResult.stats;
 
     setProgress(35, '[2/4] 인쇄일정관리 파싱 중...');
     await nextTick();
@@ -3039,7 +3045,11 @@ async function pkgHandleUpload() {
     });
     if (uploadRes.error) throw uploadRes.error;
 
-    setProgress(100, '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건');
+    var cleanMsg = '';
+    if (cleanStats.completed_by_note + cleanStats.canceled + cleanStats.stale > 0) {
+      cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건, 장기미완료 ' + cleanStats.stale + '건 제외)';
+    }
+    setProgress(100, '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건' + cleanMsg);
     status.className = 'pkg-upload-status success';
 
     // 화면 새로고침
@@ -3366,6 +3376,59 @@ function pkgJsParseShipmentsToday(workbook) {
     });
   }
   return out;
+}
+
+// orders 정리: 비고 기반 완료 처리, 취소/장기 미완료 제외
+function pkgJsCleanOrders(orders) {
+  var stats = { completed_by_note: 0, canceled: 0, stale: 0, kept: 0 };
+  var today = new Date();
+  var todayMs = today.getTime();
+  var STALE_DAYS = 30;
+
+  var cleaned = [];
+  orders.forEach(function(o) {
+    var note = (o.note || '').replace(/\s+/g, '');
+
+    // 1. 비고에 "취소" 포함 → 제외
+    if (note.indexOf('취소') !== -1) {
+      stats.canceled++;
+      return;
+    }
+
+    // 2. 이미 completed_at이 있으면 그대로 유지
+    if (o.completed_at) {
+      stats.kept++;
+      cleaned.push(o);
+      return;
+    }
+
+    // 3. 비고에 "완료" 포함 → 완료 처리 (deadline을 completed_at으로 사용)
+    if (note.indexOf('완료') !== -1) {
+      o.completed_at = o.deadline || pkgJsDateStr(today);
+      o.completed_by_note = true;
+      stats.completed_by_note++;
+      cleaned.push(o);
+      return;
+    }
+
+    // 4. 납기가 STALE_DAYS 이상 지난 미완료 → 제외 (잊혀진 건)
+    if (o.deadline) {
+      var dl = new Date(o.deadline);
+      if (!isNaN(dl.getTime())) {
+        var daysPast = (todayMs - dl.getTime()) / 86400000;
+        if (daysPast > STALE_DAYS) {
+          stats.stale++;
+          return;
+        }
+      }
+    }
+
+    // 그 외는 진짜 진행 중
+    stats.kept++;
+    cleaned.push(o);
+  });
+
+  return { orders: cleaned, stats: stats };
 }
 
 function pkgJsMergeBadges(orders, printings, shipments) {
