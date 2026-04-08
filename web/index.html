@@ -666,6 +666,7 @@ body {
 #sectorPackage .kpi-card.selected.blue   { box-shadow: 0 0 0 2px #1565c0, 0 4px 12px rgba(21,101,192,0.2); }
 #sectorPackage .kpi-card.selected.orange { box-shadow: 0 0 0 2px #e65100, 0 4px 12px rgba(230,81,0,0.2); }
 #sectorPackage .kpi-card.selected.green  { box-shadow: 0 0 0 2px #2e7d32, 0 4px 12px rgba(46,125,50,0.2); }
+#sectorPackage .kpi-card.selected.red    { box-shadow: 0 0 0 2px #b91c1c, 0 4px 12px rgba(185,28,28,0.2); }
 
 /* 필터 배너 */
 #sectorPackage #pkgFilterBanner {
@@ -825,6 +826,8 @@ body {
 #sectorPackage .kpi-card.orange .kpi-number { color: #e65100; }
 #sectorPackage .kpi-card.green::before { background: #2e7d32; }
 #sectorPackage .kpi-card.green .kpi-number { color: #2e7d32; }
+#sectorPackage .kpi-card.red::before { background: #b91c1c; }
+#sectorPackage .kpi-card.red .kpi-number { color: #b91c1c; }
 
 /* 차트 */
 #sectorPackage .chart-section {
@@ -999,6 +1002,7 @@ body {
 #sectorPackage .badge.printing { background: #dbeafe; color: #1565c0; }
 #sectorPackage .badge.shipping { background: #fff3e0; color: #e65100; }
 #sectorPackage .badge.machine { background: #f3e5f5; color: #6a1b9a; font-weight: 700; }
+#sectorPackage .badge.stale { background: #ffebee; color: #b91c1c; font-weight: 700; }
 #sectorPackage .card-client { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 3px; }
 #sectorPackage .card-product {
   font-size: 14px;
@@ -1285,6 +1289,11 @@ body {
         <span class="kpi-icon">&#x2705;</span>
         <div class="kpi-number" id="pkgKpiCompleted7d">-</div>
         <div class="kpi-label">완료 (7일)</div>
+      </div>
+      <div class="kpi-card red" onclick="pkgKpiClick('stale', this)">
+        <span class="kpi-icon">&#x26A0;</span>
+        <div class="kpi-number" id="pkgKpiStale">-</div>
+        <div class="kpi-label">장기 미완료</div>
       </div>
     </div>
   </section>
@@ -2565,6 +2574,8 @@ function renderPackageKPI() {
   document.getElementById('pkgKpiPrintingToday').textContent = s.printing_today != null ? s.printing_today : '-';
   document.getElementById('pkgKpiShippingToday').textContent = s.shipping_today != null ? s.shipping_today : '-';
   document.getElementById('pkgKpiCompleted7d').textContent   = s.completed_7d   != null ? s.completed_7d   : '-';
+  var staleEl = document.getElementById('pkgKpiStale');
+  if (staleEl) staleEl.textContent = s.stale != null ? s.stale : '-';
 }
 
 function renderPackageShipments() {
@@ -2658,6 +2669,7 @@ function renderPkgOrderCard(order) {
   html += '<div class="mgmt-no">' + escPkg(order.mgmt_no || '') + '</div>';
   html += '<div class="card-badges">';
   if (order.machine) html += '<span class="badge machine">' + escPkg(order.machine) + '</span>';
+  if (order.is_stale) html += '<span class="badge stale">⚠ ' + (order.stale_days || '') + '일 경과</span>';
   if (order.badges && order.badges.printing_today) html += '<span class="badge printing">오늘 인쇄 중</span>';
   if (order.badges && order.badges.shipping_today) html += '<span class="badge shipping">출고 예정</span>';
   html += '</div></div>';
@@ -2746,7 +2758,8 @@ var PKG_FILTER_META = {
   in_progress:    { label: '작업 대기중', color: 'navy',   empty: '작업 대기중인 주문 없음' },
   printing_today: { label: '오늘 인쇄',   color: 'blue',   empty: '오늘 인쇄 예정 없음' },
   shipping_today: { label: '출고 예정',   color: 'orange', empty: '오늘 출고 예정 없음' },
-  completed_7d:   { label: '최근 7일 완료', color: 'green', empty: '최근 7일 완료 없음' }
+  completed_7d:   { label: '최근 7일 완료', color: 'green', empty: '최근 7일 완료 없음' },
+  stale:          { label: '장기 미완료', color: 'red',    empty: '장기 미완료 건 없음' }
 };
 
 function pkgKpiClick(type, el) {
@@ -2804,7 +2817,13 @@ function pkgRenderFiltered(type) {
   var items = [];
 
   if (type === 'in_progress') {
-    items = (pkgData.orders || []).filter(function(o) { return o.completed_at == null; });
+    // 작업 대기중: 미완료 + stale 아닌 것
+    items = (pkgData.orders || []).filter(function(o) { return o.completed_at == null && !o.is_stale; });
+  } else if (type === 'stale') {
+    // 장기 미완료: is_stale 마킹된 것
+    items = (pkgData.orders || []).filter(function(o) { return o.is_stale; });
+    // 가장 오래된 순으로 정렬
+    items.sort(function(a, b) { return (b.stale_days || 0) - (a.stale_days || 0); });
   } else if (type === 'printing_today') {
     // printings_today의 mgmt_no를 orders와 매칭, 없으면 printings_today 자체를 표시
     var mgmtSet = {};
@@ -3046,10 +3065,10 @@ async function pkgHandleUpload() {
     if (uploadRes.error) throw uploadRes.error;
 
     var cleanMsg = '';
-    if (cleanStats.completed_by_note + cleanStats.canceled + cleanStats.stale > 0) {
-      cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건, 장기미완료 ' + cleanStats.stale + '건 제외)';
+    if (cleanStats.completed_by_note + cleanStats.canceled > 0) {
+      cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건 제외)';
     }
-    setProgress(100, '✅ 업데이트 완료! 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건' + cleanMsg);
+    setProgress(100, '✅ 업데이트 완료! 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건, 장기미완료 ' + (summary.stale || 0) + '건' + cleanMsg);
     status.className = 'pkg-upload-status success';
 
     // 화면 새로고침
@@ -3378,7 +3397,7 @@ function pkgJsParseShipmentsToday(workbook) {
   return out;
 }
 
-// orders 정리: 비고 기반 완료 처리, 취소/장기 미완료 제외
+// orders 정리: 비고 기반 완료 처리, 취소 제외, 장기미완료는 별도 마킹(보존)
 function pkgJsCleanOrders(orders) {
   var stats = { completed_by_note: 0, canceled: 0, stale: 0, kept: 0 };
   var today = new Date();
@@ -3389,7 +3408,7 @@ function pkgJsCleanOrders(orders) {
   orders.forEach(function(o) {
     var note = (o.note || '').replace(/\s+/g, '');
 
-    // 1. 비고에 "취소" 포함 → 제외
+    // 1. 비고에 "취소" 포함 → 완전 제외
     if (note.indexOf('취소') !== -1) {
       stats.canceled++;
       return;
@@ -3411,19 +3430,22 @@ function pkgJsCleanOrders(orders) {
       return;
     }
 
-    // 4. 납기가 STALE_DAYS 이상 지난 미완료 → 제외 (잊혀진 건)
+    // 4. 납기가 STALE_DAYS 이상 지난 미완료 → is_stale 마킹 (보존, 별도 카드로 분류)
     if (o.deadline) {
       var dl = new Date(o.deadline);
       if (!isNaN(dl.getTime())) {
         var daysPast = (todayMs - dl.getTime()) / 86400000;
         if (daysPast > STALE_DAYS) {
+          o.is_stale = true;
+          o.stale_days = Math.floor(daysPast);
           stats.stale++;
+          cleaned.push(o);
           return;
         }
       }
     }
 
-    // 그 외는 진짜 진행 중
+    // 그 외는 진짜 작업 대기중
     stats.kept++;
     cleaned.push(o);
   });
@@ -3457,6 +3479,7 @@ function pkgJsComputeSummary(orders, printings, shipments) {
   var today = new Date();
   var todayMs = today.getTime();
   var inProgress = 0;
+  var stale = 0;
   var chart = {};
   for (var k = 6; k >= 0; k--) {
     var d = new Date(todayMs - k * 86400000);
@@ -3464,7 +3487,9 @@ function pkgJsComputeSummary(orders, printings, shipments) {
   }
   var clients = {};
   orders.forEach(function(o) {
-    if (o.completed_at == null) {
+    if (o.is_stale) {
+      stale++;
+    } else if (o.completed_at == null) {
       inProgress++;
       if (o.client) clients[o.client] = (clients[o.client] || 0) + 1;
     } else if (chart[o.completed_at] != null) {
@@ -3478,6 +3503,7 @@ function pkgJsComputeSummary(orders, printings, shipments) {
     .forEach(function(k) { sortedClients[k] = clients[k]; });
   return {
     in_progress: inProgress,
+    stale: stale,
     printing_today: printings.length,
     shipping_today: shipments.length,
     completed_7d: completed7d,
