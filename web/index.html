@@ -2105,11 +2105,12 @@ async function handleFileSelect(event) {
       jsonData.uploaded_by = session.data.session.user.email;
     }
 
-    // Supabase Storage에 업로드
+    // Supabase Storage에 업로드 (cacheControl: '0' → CDN 캐싱 안 함, 다른 사용자도 즉시 최신 데이터 받음)
     var jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
     var uploadRes = await sb.storage.from('gabwoo-data').upload('data.json', jsonBlob, {
       upsert: true,
-      contentType: 'application/json'
+      contentType: 'application/json',
+      cacheControl: '0'
     });
 
     if (uploadRes.error) throw uploadRes.error;
@@ -3213,7 +3214,8 @@ async function pkgHandleUpload() {
     var jsonBlob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
     var uploadRes = await sb.storage.from('gabwoo-data').upload('data_package.json', jsonBlob, {
       upsert: true,
-      contentType: 'application/json'
+      contentType: 'application/json',
+      cacheControl: '0'
     });
     if (uploadRes.error) throw uploadRes.error;
 
