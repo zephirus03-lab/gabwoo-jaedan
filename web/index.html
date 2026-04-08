@@ -2637,13 +2637,16 @@ function pkgRenderDefaultByClient() {
     return;
   }
 
+  // 기본 화면: 출판과 동일하게 거래처 3개 이하만 자동 펼침
   orderList.innerHTML =
     '<div class="pkg-default-title">거래처별 작업 대기중 (' + items.length + '건)</div>' +
-    pkgRenderClientGrouped(items, 'waiting');
+    pkgRenderClientGrouped(items, 'waiting', false);
 }
 
 // 거래처별 그룹핑 HTML 생성
-function pkgRenderClientGrouped(items, type) {
+// forceExpand=true: 모두 펼침 (검색/필터 결과용)
+// forceExpand=false: 거래처 3개 이하면 자동 펼침, 아니면 모두 접힘 (출판과 동일)
+function pkgRenderClientGrouped(items, type, forceExpand) {
   var groups = {};
   items.forEach(function(item) {
     var c = item.client || '(거래처 없음)';
@@ -2652,19 +2655,20 @@ function pkgRenderClientGrouped(items, type) {
   });
   var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
 
-  // 거래처 수가 적으면 자동 펼침, 많으면 첫 5개만 펼침
+  // 출판과 동일: forceExpand 또는 거래처 3개 이하만 자동 펼침
+  var isExpanded = forceExpand || sorted.length <= 3;
   var headerCls = type === 'stale' ? 'pkg-client-header header-stale' : 'pkg-client-header';
+
   var html = '';
-  sorted.forEach(function(entry, idx) {
+  sorted.forEach(function(entry) {
     var client = entry[0];
     var citems = entry[1];
-    var expanded = idx < 5; // 상위 5개 거래처는 자동 펼침
     html += '<div class="pkg-client-group">';
     html += '<div class="' + headerCls + '" onclick="pkgToggleClientGroup(this)">';
     html += '<span>' + escPkg(client) + '</span>';
     html += '<span class="count">' + citems.length + '건</span>';
     html += '</div>';
-    html += '<div class="pkg-client-items' + (expanded ? '' : ' collapsed') + '">';
+    html += '<div class="pkg-client-items' + (isExpanded ? '' : ' collapsed') + '">';
     citems.forEach(function(o) {
       html += renderPkgOrderCard(o);
     });
@@ -2712,11 +2716,14 @@ function renderPackageShipments() {
   });
   var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
 
+  // 출판과 동일: 거래처 3개 이하만 자동 펼침, 아니면 모두 접힘
+  var isExpanded = sorted.length <= 3;
+
   var html = '';
-  sorted.forEach(function(entry, idx) {
+  sorted.forEach(function(entry) {
     var client = entry[0];
     var items = entry[1];
-    var expanded = idx < 5;
+    var expanded = isExpanded;
 
     html += '<div class="pkg-client-group">';
     html += '<div class="pkg-client-header header-shipping" onclick="pkgToggleClientGroup(this)">';
@@ -2800,8 +2807,8 @@ function handlePkgSearch(q) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">&#x1F50D;</div><div class="nr-text">\'' + escPkg(q) + '\' 검색 결과가 없습니다</div></div>';
     return;
   }
-  // 검색 결과도 거래처별로 그룹핑
-  orderList.innerHTML = pkgRenderClientGrouped(results, 'waiting');
+  // 검색 결과: 모두 펼침 (사용자가 검색했으니 즉시 보여줌)
+  orderList.innerHTML = pkgRenderClientGrouped(results, 'waiting', true);
 }
 
 function renderPkgOrderCard(order) {
@@ -3012,11 +3019,11 @@ function pkgRenderFiltered(type) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">' + meta.label.slice(0, 1) + '</div><div class="nr-text">' + meta.empty + '</div></div>';
     return;
   }
-  // 모든 필터 결과를 거래처별로 그룹핑 (장기 미완료는 빨간 헤더)
+  // 필터 결과: 모두 펼침 (사용자가 클릭했으니 즉시 보여줌)
   var groupType = type === 'stale' ? 'stale' : 'waiting';
   orderList.innerHTML =
     '<div class="pkg-default-title">' + meta.label + ' (' + items.length + '건)</div>' +
-    pkgRenderClientGrouped(items, groupType);
+    pkgRenderClientGrouped(items, groupType, true);
 }
 
 function pkgRenderShipmentCards(shipments) {
