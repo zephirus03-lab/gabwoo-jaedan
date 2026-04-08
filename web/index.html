@@ -1015,7 +1015,15 @@ document.getElementById('searchInput').addEventListener('input', function() {
 var SUPABASE_URL = 'https://btbqzbrtsmwoolurpqgx.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnF6YnJ0c213b29sdXJwcWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDM4MDUsImV4cCI6MjA5MTAxOTgwNX0.OPGiHDcCCWvHeOgjDhhwlPmDYg7jGwR0ZWLJrbycwi4';
 
-var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    storage: window.localStorage,
+    storageKey: 'gabwoo-auth',
+    detectSessionInUrl: false
+  }
+});
 
 function showLogin() {
   document.getElementById('loginForm').style.display = 'block';
