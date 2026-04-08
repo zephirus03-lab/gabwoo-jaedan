@@ -1269,7 +1269,7 @@ body {
       <div class="kpi-card navy" onclick="pkgKpiClick('in_progress', this)">
         <span class="kpi-icon">&#x1F4CB;</span>
         <div class="kpi-number" id="pkgKpiInProgress">-</div>
-        <div class="kpi-label">진행중</div>
+        <div class="kpi-label">작업 대기중</div>
       </div>
       <div class="kpi-card blue" onclick="pkgKpiClick('printing_today', this)">
         <span class="kpi-icon">&#x1F5A8;</span>
@@ -2743,7 +2743,7 @@ function escPkg(s) {
 var pkgCurrentFilter = null;
 
 var PKG_FILTER_META = {
-  in_progress:    { label: '진행중',     color: 'navy',   empty: '진행중 주문 없음' },
+  in_progress:    { label: '작업 대기중', color: 'navy',   empty: '작업 대기중인 주문 없음' },
   printing_today: { label: '오늘 인쇄',   color: 'blue',   empty: '오늘 인쇄 예정 없음' },
   shipping_today: { label: '출고 예정',   color: 'orange', empty: '오늘 출고 예정 없음' },
   completed_7d:   { label: '최근 7일 완료', color: 'green', empty: '최근 7일 완료 없음' }
@@ -3049,7 +3049,7 @@ async function pkgHandleUpload() {
     if (cleanStats.completed_by_note + cleanStats.canceled + cleanStats.stale > 0) {
       cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건, 장기미완료 ' + cleanStats.stale + '건 제외)';
     }
-    setProgress(100, '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건' + cleanMsg);
+    setProgress(100, '✅ 업데이트 완료! 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건' + cleanMsg);
     status.className = 'pkg-upload-status success';
 
     // 화면 새로고침
