@@ -1003,6 +1003,51 @@ body {
 #sectorPackage .badge.shipping { background: #fff3e0; color: #e65100; }
 #sectorPackage .badge.machine { background: #f3e5f5; color: #6a1b9a; font-weight: 700; }
 #sectorPackage .badge.stale { background: #ffebee; color: #b91c1c; font-weight: 700; }
+
+/* 패키지 거래처 그룹 */
+#sectorPackage .pkg-client-group { margin-bottom: 14px; }
+#sectorPackage .pkg-client-header {
+  color: white;
+  padding: 11px 16px;
+  border-radius: 12px 12px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(90deg, #1a1a2e 0%, #24244a 100%);
+}
+#sectorPackage .pkg-client-header.header-stale {
+  background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
+}
+#sectorPackage .pkg-client-header .count {
+  background: rgba(255,255,255,0.2);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+#sectorPackage .pkg-client-items {
+  background: white;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  padding: 4px;
+}
+#sectorPackage .pkg-client-items.collapsed { display: none; }
+#sectorPackage .pkg-client-items .order-card {
+  margin: 6px 4px;
+}
+#sectorPackage .pkg-default-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 8px 4px 12px;
+}
 #sectorPackage .card-client { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 3px; }
 #sectorPackage .card-product {
   font-size: 14px;
@@ -2557,8 +2602,73 @@ function renderPackageAll() {
   renderPackageKPI();
   renderPackageShipments();
   pkgClearFilter();
-  document.getElementById('pkgResultHint').style.display = 'block';
-  document.getElementById('pkgOrderList').innerHTML = '';
+  pkgRenderDefaultByClient();
+}
+
+// 패키지 기본 화면: 작업 대기중을 거래처별로 그룹핑해서 표시
+function pkgRenderDefaultByClient() {
+  var orderList = document.getElementById('pkgOrderList');
+  var resultHint = document.getElementById('pkgResultHint');
+  if (!orderList) return;
+
+  if (!pkgData || !pkgData.orders) {
+    if (resultHint) resultHint.style.display = 'block';
+    orderList.innerHTML = '';
+    return;
+  }
+
+  // 작업 대기중 (stale 제외)
+  var items = pkgData.orders.filter(function(o) {
+    return o.completed_at == null && !o.is_stale;
+  });
+
+  if (resultHint) resultHint.style.display = 'none';
+
+  if (!items.length) {
+    orderList.innerHTML = '<div class="no-result"><div class="nr-text">작업 대기중인 주문이 없습니다</div></div>';
+    return;
+  }
+
+  orderList.innerHTML =
+    '<div class="pkg-default-title">거래처별 작업 대기중 (' + items.length + '건)</div>' +
+    pkgRenderClientGrouped(items, 'waiting');
+}
+
+// 거래처별 그룹핑 HTML 생성
+function pkgRenderClientGrouped(items, type) {
+  var groups = {};
+  items.forEach(function(item) {
+    var c = item.client || '(거래처 없음)';
+    if (!groups[c]) groups[c] = [];
+    groups[c].push(item);
+  });
+  var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
+
+  // 거래처 수가 적으면 자동 펼침, 많으면 첫 5개만 펼침
+  var headerCls = type === 'stale' ? 'pkg-client-header header-stale' : 'pkg-client-header';
+  var html = '';
+  sorted.forEach(function(entry, idx) {
+    var client = entry[0];
+    var citems = entry[1];
+    var expanded = idx < 5; // 상위 5개 거래처는 자동 펼침
+    html += '<div class="pkg-client-group">';
+    html += '<div class="' + headerCls + '" onclick="pkgToggleClientGroup(this)">';
+    html += '<span>' + escPkg(client) + '</span>';
+    html += '<span class="count">' + citems.length + '건</span>';
+    html += '</div>';
+    html += '<div class="pkg-client-items' + (expanded ? '' : ' collapsed') + '">';
+    citems.forEach(function(o) {
+      html += renderPkgOrderCard(o);
+    });
+    html += '</div>';
+    html += '</div>';
+  });
+  return html;
+}
+
+function pkgToggleClientGroup(header) {
+  var items = header.nextElementSibling;
+  if (items) items.classList.toggle('collapsed');
 }
 
 function renderPackageHeader() {
@@ -2621,10 +2731,9 @@ function handlePkgSearch(q) {
 
   if (q.length < 1) {
     hint.style.display = 'none';
-    resultHint.style.display = 'block';
-    orderList.innerHTML = '';
-    // 검색어 비우면 정적 섹션 복원
+    // 검색어 비우면 정적 섹션 복원 + 기본 화면으로 복귀
     if (shipmentSection) shipmentSection.style.display = '';
+    pkgRenderDefaultByClient();
     return;
   }
   resultHint.style.display = 'none';
@@ -2658,7 +2767,8 @@ function handlePkgSearch(q) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">&#x1F50D;</div><div class="nr-text">\'' + escPkg(q) + '\' 검색 결과가 없습니다</div></div>';
     return;
   }
-  orderList.innerHTML = results.map(renderPkgOrderCard).join('');
+  // 검색 결과도 거래처별로 그룹핑
+  orderList.innerHTML = pkgRenderClientGrouped(results, 'waiting');
 }
 
 function renderPkgOrderCard(order) {
@@ -2800,14 +2910,13 @@ function pkgClearFilter() {
   cards.forEach(function(c) { c.classList.remove('selected'); });
   var banner = document.getElementById('pkgFilterBanner');
   if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
-  var orderList = document.getElementById('pkgOrderList');
-  if (orderList) orderList.innerHTML = '';
-  var resultHint = document.getElementById('pkgResultHint');
-  if (resultHint) resultHint.style.display = 'block';
 
   // 필터 해제 시 정적 "오늘 출고 예정" 섹션 복원
   var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
   if (shipmentSection) shipmentSection.style.display = '';
+
+  // 기본 화면(거래처별 작업 대기중)으로 복귀
+  pkgRenderDefaultByClient();
 }
 
 function pkgRenderFiltered(type) {
@@ -2870,7 +2979,11 @@ function pkgRenderFiltered(type) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">' + meta.label.slice(0, 1) + '</div><div class="nr-text">' + meta.empty + '</div></div>';
     return;
   }
-  orderList.innerHTML = items.map(renderPkgOrderCard).join('');
+  // 모든 필터 결과를 거래처별로 그룹핑 (장기 미완료는 빨간 헤더)
+  var groupType = type === 'stale' ? 'stale' : 'waiting';
+  orderList.innerHTML =
+    '<div class="pkg-default-title">' + meta.label + ' (' + items.length + '건)</div>' +
+    pkgRenderClientGrouped(items, groupType);
 }
 
 function pkgRenderShipmentCards(shipments) {
