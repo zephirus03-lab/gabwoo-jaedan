@@ -1022,6 +1022,14 @@ body {
 #sectorPackage .pkg-client-header.header-stale {
   background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
 }
+#sectorPackage .pkg-client-header.header-shipping {
+  background: linear-gradient(90deg, #e65100 0%, #f57c00 100%);
+}
+#sectorPackage .shipment-dest {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
 #sectorPackage .pkg-client-header .count {
   background: rgba(255,255,255,0.2);
   padding: 2px 10px;
@@ -2694,20 +2702,45 @@ function renderPackageShipments() {
     container.innerHTML = '<div class="shipment-empty">오늘 출고 예정 없음</div>';
     return;
   }
-  var html = '';
+
+  // 거래처별 그룹핑
+  var groups = {};
   pkgData.shipments_today.forEach(function(item) {
-    html += '<div class="shipment-item">';
-    html += '<div class="shipment-main">';
-    html += '<div class="shipment-client">' + escPkg(item.client || '') + '</div>';
-    html += '<div class="shipment-product">' + escPkg(item.product || '') + '</div>';
+    var c = item.client || '(거래처 없음)';
+    if (!groups[c]) groups[c] = [];
+    groups[c].push(item);
+  });
+  var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
+
+  var html = '';
+  sorted.forEach(function(entry, idx) {
+    var client = entry[0];
+    var items = entry[1];
+    var expanded = idx < 5;
+
+    html += '<div class="pkg-client-group">';
+    html += '<div class="pkg-client-header header-shipping" onclick="pkgToggleClientGroup(this)">';
+    html += '<span>' + escPkg(client) + '</span>';
+    html += '<span class="count">' + items.length + '건</span>';
     html += '</div>';
-    html += '<div class="shipment-meta">';
-    html += '<div class="shipment-qty">' + formatPkgQty(item.qty) + '</div>';
-    if (item.status) {
-      html += '<div class="shipment-status">' + escPkg(item.status) + '</div>';
-    }
-    html += '</div>';
-    html += '</div>';
+    html += '<div class="pkg-client-items' + (expanded ? '' : ' collapsed') + '">';
+    items.forEach(function(item) {
+      html += '<div class="shipment-item">';
+      html += '<div class="shipment-main">';
+      html += '<div class="shipment-product">' + escPkg(item.product || '') + '</div>';
+      if (item.destination) {
+        html += '<div class="shipment-dest">→ ' + escPkg(item.destination) + '</div>';
+      }
+      html += '</div>';
+      html += '<div class="shipment-meta">';
+      html += '<div class="shipment-qty">' + formatPkgQty(item.qty) + '</div>';
+      if (item.status) {
+        html += '<div class="shipment-status">' + escPkg(item.status) + '</div>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
   });
   container.innerHTML = html;
 }
