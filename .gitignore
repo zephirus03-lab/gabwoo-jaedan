@@ -17,3 +17,10 @@ AX 전환 계획/
 
 # 작업용 임시 파일
 web_deploy/
+
+# 내부 문서 (인터뷰/녹음/사진/내부 자료)
+docs/
+!docs/01-plan/
+!docs/01-plan/**
+!docs/02-design/
+!docs/02-design/**
