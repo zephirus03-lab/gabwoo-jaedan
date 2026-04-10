@@ -526,24 +526,6 @@ body {
 .upload-status.success { color: #166534; }
 .upload-file-input { display: none; }
 
-/* 업로드 진행률 바 */
-.upload-progress {
-  margin-top: 10px;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  display: none;
-}
-.upload-progress.active { display: block; }
-.upload-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #1565c0, #1e88e5);
-  border-radius: 4px;
-  width: 0%;
-  transition: width 0.2s ease;
-}
-
 /* ═══════════════════════════════════════════════════════════════
    SECTOR TOGGLE (출판 / 패키지 전환)
 ═══════════════════════════════════════════════════════════════ */
@@ -664,9 +646,8 @@ body {
 #sectorPackage .kpi-card:active { transform: scale(0.96); }
 #sectorPackage .kpi-card.selected.navy   { box-shadow: 0 0 0 2px #1a1a2e, 0 4px 12px rgba(26,26,46,0.2); }
 #sectorPackage .kpi-card.selected.blue   { box-shadow: 0 0 0 2px #1565c0, 0 4px 12px rgba(21,101,192,0.2); }
-#sectorPackage .kpi-card.selected.orange { box-shadow: 0 0 0 2px #0d7377, 0 4px 12px rgba(13,115,119,0.2); }
+#sectorPackage .kpi-card.selected.orange { box-shadow: 0 0 0 2px #e65100, 0 4px 12px rgba(230,81,0,0.2); }
 #sectorPackage .kpi-card.selected.green  { box-shadow: 0 0 0 2px #2e7d32, 0 4px 12px rgba(46,125,50,0.2); }
-#sectorPackage .kpi-card.selected.red    { box-shadow: 0 0 0 2px #b91c1c, 0 4px 12px rgba(185,28,28,0.2); }
 
 /* 필터 배너 */
 #sectorPackage #pkgFilterBanner {
@@ -779,22 +760,6 @@ body {
 }
 #sectorPackage .pkg-upload-status.error { color: #b91c1c; font-weight: 600; }
 #sectorPackage .pkg-upload-status.success { color: #166534; font-weight: 600; }
-#sectorPackage .pkg-upload-progress {
-  margin-top: 10px;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  display: none;
-}
-#sectorPackage .pkg-upload-progress.active { display: block; }
-#sectorPackage .pkg-upload-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #1565c0, #1e88e5);
-  border-radius: 4px;
-  width: 0%;
-  transition: width 0.2s ease;
-}
 #sectorPackage .kpi-card::before {
   content: '';
   position: absolute;
@@ -822,12 +787,10 @@ body {
 #sectorPackage .kpi-card.navy .kpi-number  { color: #1a1a2e; }
 #sectorPackage .kpi-card.blue::before  { background: #1565c0; }
 #sectorPackage .kpi-card.blue .kpi-number  { color: #1565c0; }
-#sectorPackage .kpi-card.orange::before { background: #0d7377; }
-#sectorPackage .kpi-card.orange .kpi-number { color: #0d7377; }
+#sectorPackage .kpi-card.orange::before { background: #e65100; }
+#sectorPackage .kpi-card.orange .kpi-number { color: #e65100; }
 #sectorPackage .kpi-card.green::before { background: #2e7d32; }
 #sectorPackage .kpi-card.green .kpi-number { color: #2e7d32; }
-#sectorPackage .kpi-card.red::before { background: #b91c1c; }
-#sectorPackage .kpi-card.red .kpi-number { color: #b91c1c; }
 
 /* 차트 */
 #sectorPackage .chart-section {
@@ -925,7 +888,7 @@ body {
 }
 #sectorPackage .shipment-meta { text-align: right; flex-shrink: 0; margin-left: 12px; }
 #sectorPackage .shipment-qty { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-#sectorPackage .shipment-status { font-size: 11px; color: #0d7377; font-weight: 600; margin-top: 2px; }
+#sectorPackage .shipment-status { font-size: 11px; color: #e65100; font-weight: 600; margin-top: 2px; }
 #sectorPackage .shipment-empty {
   text-align: center;
   padding: 20px;
@@ -1000,62 +963,7 @@ body {
   white-space: nowrap;
 }
 #sectorPackage .badge.printing { background: #dbeafe; color: #1565c0; }
-#sectorPackage .badge.shipping { background: #d1f5f4; color: #0d7377; }
-#sectorPackage .badge.machine { background: #f3e5f5; color: #6a1b9a; font-weight: 700; }
-#sectorPackage .badge.stale { background: #ffebee; color: #b91c1c; font-weight: 700; }
-
-/* 패키지 거래처 그룹 */
-#sectorPackage .pkg-client-group { margin-bottom: 14px; }
-#sectorPackage .pkg-client-header {
-  color: white;
-  padding: 11px 16px;
-  border-radius: 12px 12px 0 0;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  background: linear-gradient(90deg, #1a1a2e 0%, #24244a 100%);
-}
-#sectorPackage .pkg-client-header.header-stale {
-  background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
-}
-#sectorPackage .pkg-client-header.header-shipping {
-  background: linear-gradient(90deg, #0d7377 0%, #14a085 100%);
-}
-#sectorPackage .shipment-dest {
-  font-size: 11px;
-  color: #6b7280;
-  margin-top: 2px;
-}
-#sectorPackage .pkg-client-header .count {
-  background: rgba(255,255,255,0.2);
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-}
-#sectorPackage .pkg-client-items {
-  background: white;
-  border-radius: 0 0 12px 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-  padding: 4px;
-}
-#sectorPackage .pkg-client-items.collapsed { display: none; }
-#sectorPackage .pkg-client-items .order-card {
-  margin: 6px 4px;
-}
-#sectorPackage .pkg-default-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 8px 4px 12px;
-}
+#sectorPackage .badge.shipping { background: #fff3e0; color: #e65100; }
 #sectorPackage .card-client { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 3px; }
 #sectorPackage .card-product {
   font-size: 14px;
@@ -1151,10 +1059,42 @@ body {
         <span>로그인 유지 (같은 브라우저에서 자동 로그인)</span>
       </label>
       <button class="auth-btn" onclick="handleLogin()">로그인</button>
+      <div class="auth-toggle" style="margin-top:12px;margin-bottom:0;">
+        <a onclick="showResetPassword()">비밀번호를 잊으셨나요?</a>
+      </div>
       <div class="auth-divider"><span>OR</span></div>
       <div class="auth-toggle">
         계정이 없으신가요? <a onclick="showSignup()">가입 신청</a>
       </div>
+    </div>
+
+    <!-- 비밀번호 찾기 폼 -->
+    <div id="resetPasswordForm" style="display:none;">
+      <div class="auth-box-title">비밀번호 찾기</div>
+      <p style="font-size:13px;color:#666;margin-bottom:16px;">가입하신 이메일을 입력하시면 비밀번호 재설정 링크를 보내드립니다.</p>
+      <div class="auth-field">
+        <label>이메일</label>
+        <input type="email" id="resetEmail" placeholder="가입한 이메일 주소">
+      </div>
+      <button class="auth-btn" onclick="handleResetPassword()">재설정 링크 보내기</button>
+      <div class="auth-divider"><span>OR</span></div>
+      <div class="auth-toggle">
+        <a onclick="showLogin()">로그인으로 돌아가기</a>
+      </div>
+    </div>
+
+    <!-- 새 비밀번호 설정 폼 -->
+    <div id="newPasswordForm" style="display:none;">
+      <div class="auth-box-title">새 비밀번호 설정</div>
+      <div class="auth-field">
+        <label>새 비밀번호</label>
+        <input type="password" id="newPassword" placeholder="새 비밀번호 (6자 이상)">
+      </div>
+      <div class="auth-field">
+        <label>비밀번호 확인</label>
+        <input type="password" id="newPasswordConfirm" placeholder="새 비밀번호 다시 입력">
+      </div>
+      <button class="auth-btn" onclick="handleUpdatePassword()">비밀번호 변경</button>
     </div>
 
     <!-- 가입 폼 -->
@@ -1281,7 +1221,6 @@ body {
     <div class="upload-title">재단지시서 업데이트</div>
     <input type="file" id="fileInput" class="upload-file-input" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
     <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">엑셀 파일 선택 및 업로드</button>
-    <div class="upload-progress" id="uploadProgress"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
     <div class="upload-status" id="uploadStatus"></div>
   </div>
 </div>
@@ -1326,7 +1265,7 @@ body {
       <div class="kpi-card navy" onclick="pkgKpiClick('in_progress', this)">
         <span class="kpi-icon">&#x1F4CB;</span>
         <div class="kpi-number" id="pkgKpiInProgress">-</div>
-        <div class="kpi-label">작업 대기중</div>
+        <div class="kpi-label">진행중</div>
       </div>
       <div class="kpi-card blue" onclick="pkgKpiClick('printing_today', this)">
         <span class="kpi-icon">&#x1F5A8;</span>
@@ -1343,11 +1282,6 @@ body {
         <div class="kpi-number" id="pkgKpiCompleted7d">-</div>
         <div class="kpi-label">완료 (7일)</div>
       </div>
-      <div class="kpi-card red" onclick="pkgKpiClick('stale', this)">
-        <span class="kpi-icon">&#x26A0;</span>
-        <div class="kpi-number" id="pkgKpiStale">-</div>
-        <div class="kpi-label">장기 미완료</div>
-      </div>
     </div>
   </section>
 
@@ -1359,8 +1293,8 @@ body {
     <div class="pkg-upload-panel">
       <div class="pkg-upload-title">🗂️ 패키지 엑셀 업로드</div>
       <div class="pkg-upload-desc">
-        변경된 엑셀 파일만 선택하세요. (1개~3개, 순서 무관)<br>
-        선택하지 않은 파일은 기존 데이터가 유지됩니다.
+        수주관리 + 인쇄종합 + 출고품목리스트 엑셀 파일 3개를 선택하세요.<br>
+        (파일명 자동 인식 — 순서 무관)
       </div>
 
       <div class="pkg-file-row" id="pkgFileRowOrders">
@@ -1386,7 +1320,6 @@ body {
       <button type="button" class="pkg-upload-btn" id="pkgUploadBtn" onclick="pkgHandleUpload()" disabled>
         변환 및 업로드
       </button>
-      <div class="pkg-upload-progress" id="pkgUploadProgress"><div class="pkg-upload-progress-fill" id="pkgUploadProgressFill"></div></div>
       <div class="pkg-upload-status" id="pkgUploadStatus"></div>
     </div>
   </div>
@@ -1422,8 +1355,6 @@ body {
     <div id="approvedUsersPanel"></div>
   </div>
 </div>
-
-
 
 </div><!-- /mainApp -->
 
@@ -1782,20 +1713,79 @@ var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     storage: authStorage,
     storageKey: 'gabwoo-auth',
-    detectSessionInUrl: false
+    detectSessionInUrl: true
   }
 });
 
 function showLogin() {
   document.getElementById('loginForm').style.display = 'block';
   document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  document.getElementById('newPasswordForm').style.display = 'none';
   hideMessages();
 }
 
 function showSignup() {
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('signupForm').style.display = 'block';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  document.getElementById('newPasswordForm').style.display = 'none';
   hideMessages();
+}
+
+function showResetPassword() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('resetPasswordForm').style.display = 'block';
+  document.getElementById('newPasswordForm').style.display = 'none';
+  hideMessages();
+}
+
+function showNewPasswordForm() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  document.getElementById('newPasswordForm').style.display = 'block';
+  hideMessages();
+}
+
+async function handleResetPassword() {
+  hideMessages();
+  var email = document.getElementById('resetEmail').value.trim();
+  if (!email) { showError('이메일을 입력해주세요'); return; }
+
+  var res = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+
+  if (res.error) {
+    showError('오류가 발생했습니다: ' + res.error.message);
+    return;
+  }
+
+  showSuccess('비밀번호 재설정 링크를 이메일로 보냈습니다. 이메일을 확인해주세요.');
+}
+
+async function handleUpdatePassword() {
+  hideMessages();
+  var pw = document.getElementById('newPassword').value;
+  var pwConfirm = document.getElementById('newPasswordConfirm').value;
+
+  if (!pw || !pwConfirm) { showError('비밀번호를 입력해주세요'); return; }
+  if (pw.length < 6) { showError('비밀번호는 6자 이상이어야 합니다'); return; }
+  if (pw !== pwConfirm) { showError('비밀번호가 일치하지 않습니다'); return; }
+
+  var res = await sb.auth.updateUser({ password: pw });
+  if (res.error) {
+    showError('비밀번호 변경 실패: ' + res.error.message);
+    return;
+  }
+
+  showSuccess('비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.');
+  await sb.auth.signOut();
+  setTimeout(showLogin, 2000);
 }
 
 function hideMessages() {
@@ -1952,14 +1942,11 @@ async function loadApprovedUsers() {
     html += '<div style="padding:10px 16px;background:white;margin:0 16px 8px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">';
     html += '<div><span style="font-weight:600;font-size:14px;">' + esc(user.email) + '</span>' + adminBadge + '</div>';
     if (!isMe) {
-      html += '<div style="display:flex;gap:4px;">';
       if (user.is_admin) {
         html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', false)" style="background:#888;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 해제</button>';
       } else {
         html += '<button onclick="toggleAdmin(\'' + esc(user.email) + '\', true)" style="background:#1565c0;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">관리자 지정</button>';
       }
-      html += '<button onclick="deleteUser(\'' + esc(user.email) + '\')" style="background:#c62828;color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;">삭제</button>';
-      html += '</div>';
     } else {
       html += '<span style="font-size:11px;color:#888;">나</span>';
     }
@@ -1975,22 +1962,6 @@ async function toggleAdmin(email, makeAdmin) {
     return;
   }
   loadApprovedUsers();
-}
-
-async function deleteUser(email) {
-  if (!confirm(email + ' 사용자를 삭제하시겠습니까?\n\n해당 사용자는 더 이상 로그인할 수 없습니다.')) return;
-
-  // approved_users에서 삭제 (RLS로 관리자만 가능)
-  var res1 = await sb.from('approved_users').delete().eq('email', email);
-  if (res1.error) {
-    alert('삭제 실패: ' + res1.error.message);
-    return;
-  }
-  // signup_requests에서도 정리 (재가입 가능하도록)
-  await sb.from('signup_requests').delete().eq('email', email);
-
-  loadApprovedUsers();
-  checkPendingBadge();
 }
 
 var isAdmin = false;
@@ -2055,49 +2026,24 @@ async function handleFileSelect(event) {
 
   var btn = document.getElementById('uploadBtn');
   var status = document.getElementById('uploadStatus');
-  var progress = document.getElementById('uploadProgress');
-  var progressFill = document.getElementById('uploadProgressFill');
-
   btn.disabled = true;
   btn.textContent = '변환 중...';
   btn.className = 'upload-btn uploading';
   status.className = 'upload-status';
-  progress.className = 'upload-progress active';
-  progressFill.style.width = '0%';
-
-  function setProgress(pct, text) {
-    progressFill.style.width = pct + '%';
-    status.textContent = text;
-  }
-
-  // UI에 그릴 시간을 주기 위한 yield
-  function nextTick() {
-    return new Promise(function(r) { setTimeout(r, 0); });
-  }
+  status.textContent = '엑셀 파일을 읽는 중...';
 
   try {
-    setProgress(5, '엑셀 파일을 읽는 중...');
-    await nextTick();
-
     var arrayBuffer = await file.arrayBuffer();
-    setProgress(15, '엑셀 파싱 중...');
-    await nextTick();
-
     var workbook = XLSX.read(arrayBuffer, { type: 'array', cellStyles: true });
-    setProgress(25, '데이터 변환 중...');
-    await nextTick();
 
-    var jsonData = await convertExcel(workbook, function(pct, text) {
-      // 25% ~ 75% 구간을 변환에 할당
-      setProgress(25 + Math.round(pct * 0.5), text);
-    });
+    status.textContent = '데이터 변환 중...';
+    var jsonData = convertExcel(workbook);
 
     if (!jsonData || jsonData.today_work.length + jsonData.waiting.length === 0) {
       throw new Error('변환된 데이터가 없습니다. 올바른 재단지시서 파일인지 확인해주세요.');
     }
 
-    setProgress(80, '서버에 업로드 중...');
-    await nextTick();
+    status.textContent = '서버에 업로드 중...';
 
     // 업로드한 사람 기록
     var session = await sb.auth.getSession();
@@ -2105,22 +2051,21 @@ async function handleFileSelect(event) {
       jsonData.uploaded_by = session.data.session.user.email;
     }
 
-    // Supabase Storage에 업로드 (cacheControl: '0' → CDN 캐싱 안 함, 다른 사용자도 즉시 최신 데이터 받음)
+    // Supabase Storage에 업로드
     var jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
     var uploadRes = await sb.storage.from('gabwoo-data').upload('data.json', jsonBlob, {
       upsert: true,
-      contentType: 'application/json',
-      cacheControl: '0'
+      contentType: 'application/json'
     });
 
     if (uploadRes.error) throw uploadRes.error;
 
-    setProgress(90, '데이터 검증 중...');
-    await nextTick();
+    // 데이터 검증
+    status.textContent = '데이터 검증 중...';
     var verifyResult = verifyData(workbook, jsonData);
 
-    setProgress(100, '업데이트 완료! 금일 작업 예정 ' + jsonData.summary.today_work + '건, 작업 대기 ' + jsonData.summary.waiting + '건, 완료 ' + jsonData.summary.recent_completed + '건');
     status.className = 'upload-status success';
+    status.textContent = '업데이트 완료! 금일 작업 예정 ' + jsonData.summary.today_work + '건, 작업 대기 ' + jsonData.summary.waiting + '건, 완료 ' + jsonData.summary.recent_completed + '건';
 
     if (!verifyResult.passed) {
       status.className = 'upload-status error';
@@ -2132,13 +2077,9 @@ async function handleFileSelect(event) {
     renderAll();
     showVerifyBadge(verifyResult);
 
-    // 2초 후 진행률 바 숨김
-    setTimeout(function() { progress.className = 'upload-progress'; }, 2000);
-
   } catch(e) {
     status.className = 'upload-status error';
     status.textContent = '오류: ' + e.message;
-    progress.className = 'upload-progress';
   }
 
   btn.disabled = false;
@@ -2147,10 +2088,7 @@ async function handleFileSelect(event) {
   event.target.value = '';
 }
 
-async function convertExcel(workbook, onProgress) {
-  if (!onProgress) onProgress = function() {};
-  function nextTick() { return new Promise(function(r) { setTimeout(r, 0); }); }
-
+function convertExcel(workbook) {
   var ws = workbook.Sheets['재단지시서'];
   if (!ws) throw new Error('"재단지시서" 시트를 찾을 수 없습니다.');
 
@@ -2316,19 +2254,37 @@ async function convertExcel(workbook, onProgress) {
   }
 
   var latestDate = formatDate(latestSection.date);
-  onProgress(5, '오늘 섹션 파싱 중...');
-  await nextTick();
   var currentItems = parseSection(latestIdx, true);
 
-  // 완료 건 추출 (연쇄 비교) — 캐싱 + 비동기
+  // 완료 건 추출 (연쇄 비교)
   var currentKeys = {};
   currentItems.forEach(function(i) { currentKeys[i.client + '|||' + i.product] = true; });
 
-  // 섹션 파싱 결과 캐싱
-  var parseCache = {};
-  function getParsed(idx) {
-    if (!parseCache[idx]) parseCache[idx] = parseSection(idx, false);
-    return parseCache[idx];
+  function extractCompleted(maxSteps) {
+    var items = [];
+    var seen = {};
+    for (var step = 0; step < Math.min(maxSteps, latestIdx); step++) {
+      var newerIdx = latestIdx - step;
+      var olderIdx = newerIdx - 1;
+      if (olderIdx < 0) break;
+
+      var newerDate = formatDate(sections[newerIdx].date);
+      var olderItems = parseSection(olderIdx, false);
+      var newerItems = parseSection(newerIdx, false);
+      var newerKeys = {};
+      newerItems.forEach(function(i) { newerKeys[i.client + '|||' + i.product] = true; });
+
+      olderItems.forEach(function(item) {
+        var key = item.client + '|||' + item.product;
+        if (!newerKeys[key] && !currentKeys[key] && !seen[key]) {
+          item.completed_between = formatDate(sections[olderIdx].date) + ' → ' + newerDate;
+          item.completed_date = newerDate;
+          items.push(item);
+          seen[key] = true;
+        }
+      });
+    }
+    return items;
   }
 
   // 10일 범위 계산
@@ -2341,63 +2297,11 @@ async function convertExcel(workbook, onProgress) {
     lookback10d = s + 1;
   }
 
-  // 모든 섹션 한 번만 파싱하면서 점진적으로 완료 추출
-  // 최근 10일분과 전체분을 동시에 누적
-  var recentCompleted = [];
-  var allCompleted = [];
-  var seenAll = {};
-  var seenRecent = {};
-  var totalSteps = latestIdx;
-
-  for (var step = 0; step < totalSteps; step++) {
-    var newerIdx = latestIdx - step;
-    var olderIdx = newerIdx - 1;
-    if (olderIdx < 0) break;
-
-    var newerDate = formatDate(sections[newerIdx].date);
-    var olderItems = getParsed(olderIdx);
-    var newerItems = getParsed(newerIdx);
-    var newerKeys = {};
-    for (var ni = 0; ni < newerItems.length; ni++) {
-      newerKeys[newerItems[ni].client + '|||' + newerItems[ni].product] = true;
-    }
-
-    var isRecent = step < lookback10d;
-
-    for (var oi = 0; oi < olderItems.length; oi++) {
-      var item = olderItems[oi];
-      var key = item.client + '|||' + item.product;
-      if (newerKeys[key] || currentKeys[key]) continue;
-
-      if (!seenAll[key]) {
-        // 완료된 건 — 메타데이터 추가
-        var completedItem = Object.assign({}, item, {
-          completed_between: formatDate(sections[olderIdx].date) + ' → ' + newerDate,
-          completed_date: newerDate
-        });
-        allCompleted.push(completedItem);
-        seenAll[key] = true;
-
-        if (isRecent && !seenRecent[key]) {
-          recentCompleted.push(completedItem);
-          seenRecent[key] = true;
-        }
-      }
-    }
-
-    // 진행률 업데이트 + UI yield (5스텝마다)
-    if (step % 5 === 0 || step === totalSteps - 1) {
-      var pct = 10 + Math.round((step / totalSteps) * 80);
-      onProgress(pct, '완료 이력 분석 중... (' + (step + 1) + '/' + totalSteps + '일)');
-      await nextTick();
-    }
-  }
-
-  onProgress(95, '데이터 정리 중...');
-  await nextTick();
-
+  var recentCompleted = extractCompleted(lookback10d);
   recentCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
   recentCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
+
+  var allCompleted = extractCompleted(latestIdx);
   allCompleted.sort(function(a, b) { return a.client.localeCompare(b.client); });
   allCompleted.sort(function(a, b) { return b.completed_date.localeCompare(a.completed_date); });
 
@@ -2531,8 +2435,23 @@ function showVerifyBadge(result) {
   }
 }
 
+// 비밀번호 복구 이벤트 감지
+sb.auth.onAuthStateChange(function(event, session) {
+  if (event === 'PASSWORD_RECOVERY') {
+    showNewPasswordForm();
+  }
+});
+
 // 페이지 로드 시 세션 확인
 async function checkSession() {
+  // URL에 recovery 토큰이 있으면 Supabase가 자동으로 PASSWORD_RECOVERY 이벤트를 발생시킴
+  // 해시 파라미터에 type=recovery가 있는지 체크
+  var hash = window.location.hash;
+  if (hash && hash.includes('type=recovery')) {
+    // onAuthStateChange에서 처리되므로 여기서는 대기
+    return;
+  }
+
   var res = await sb.auth.getSession();
   if (res.data.session) {
     var email = res.data.session.user.email;
@@ -2611,77 +2530,8 @@ function renderPackageAll() {
   renderPackageKPI();
   renderPackageShipments();
   pkgClearFilter();
-  pkgRenderDefaultByClient();
-}
-
-// 패키지 기본 화면: 작업 대기중을 거래처별로 그룹핑해서 표시
-function pkgRenderDefaultByClient() {
-  var orderList = document.getElementById('pkgOrderList');
-  var resultHint = document.getElementById('pkgResultHint');
-  if (!orderList) return;
-
-  if (!pkgData || !pkgData.orders) {
-    if (resultHint) resultHint.style.display = 'block';
-    orderList.innerHTML = '';
-    return;
-  }
-
-  // 작업 대기중 (stale 제외)
-  var items = pkgData.orders.filter(function(o) {
-    return o.completed_at == null && !o.is_stale;
-  });
-
-  if (resultHint) resultHint.style.display = 'none';
-
-  if (!items.length) {
-    orderList.innerHTML = '<div class="no-result"><div class="nr-text">작업 대기중인 주문이 없습니다</div></div>';
-    return;
-  }
-
-  // 기본 화면: 출판과 동일하게 거래처 3개 이하만 자동 펼침
-  orderList.innerHTML =
-    '<div class="pkg-default-title">거래처별 작업 대기중 (' + items.length + '건)</div>' +
-    pkgRenderClientGrouped(items, 'waiting', false);
-}
-
-// 거래처별 그룹핑 HTML 생성
-// forceExpand=true: 모두 펼침 (검색/필터 결과용)
-// forceExpand=false: 거래처 3개 이하면 자동 펼침, 아니면 모두 접힘 (출판과 동일)
-function pkgRenderClientGrouped(items, type, forceExpand) {
-  var groups = {};
-  items.forEach(function(item) {
-    var c = item.client || '(거래처 없음)';
-    if (!groups[c]) groups[c] = [];
-    groups[c].push(item);
-  });
-  var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
-
-  // 출판과 동일: forceExpand 또는 거래처 3개 이하만 자동 펼침
-  var isExpanded = forceExpand || sorted.length <= 3;
-  var headerCls = type === 'stale' ? 'pkg-client-header header-stale' : 'pkg-client-header';
-
-  var html = '';
-  sorted.forEach(function(entry) {
-    var client = entry[0];
-    var citems = entry[1];
-    html += '<div class="pkg-client-group">';
-    html += '<div class="' + headerCls + '" onclick="pkgToggleClientGroup(this)">';
-    html += '<span>' + escPkg(client) + '</span>';
-    html += '<span class="count">' + citems.length + '건</span>';
-    html += '</div>';
-    html += '<div class="pkg-client-items' + (isExpanded ? '' : ' collapsed') + '">';
-    citems.forEach(function(o) {
-      html += renderPkgOrderCard(o);
-    });
-    html += '</div>';
-    html += '</div>';
-  });
-  return html;
-}
-
-function pkgToggleClientGroup(header) {
-  var items = header.nextElementSibling;
-  if (items) items.classList.toggle('collapsed');
+  document.getElementById('pkgResultHint').style.display = 'block';
+  document.getElementById('pkgOrderList').innerHTML = '';
 }
 
 function renderPackageHeader() {
@@ -2697,8 +2547,6 @@ function renderPackageKPI() {
   document.getElementById('pkgKpiPrintingToday').textContent = s.printing_today != null ? s.printing_today : '-';
   document.getElementById('pkgKpiShippingToday').textContent = s.shipping_today != null ? s.shipping_today : '-';
   document.getElementById('pkgKpiCompleted7d').textContent   = s.completed_7d   != null ? s.completed_7d   : '-';
-  var staleEl = document.getElementById('pkgKpiStale');
-  if (staleEl) staleEl.textContent = s.stale != null ? s.stale : '-';
 }
 
 function renderPackageShipments() {
@@ -2707,48 +2555,20 @@ function renderPackageShipments() {
     container.innerHTML = '<div class="shipment-empty">오늘 출고 예정 없음</div>';
     return;
   }
-
-  // 거래처별 그룹핑
-  var groups = {};
-  pkgData.shipments_today.forEach(function(item) {
-    var c = item.client || '(거래처 없음)';
-    if (!groups[c]) groups[c] = [];
-    groups[c].push(item);
-  });
-  var sorted = Object.entries(groups).sort(function(a, b) { return b[1].length - a[1].length; });
-
-  // 출판과 동일: 거래처 3개 이하만 자동 펼침, 아니면 모두 접힘
-  var isExpanded = sorted.length <= 3;
-
   var html = '';
-  sorted.forEach(function(entry) {
-    var client = entry[0];
-    var items = entry[1];
-    var expanded = isExpanded;
-
-    html += '<div class="pkg-client-group">';
-    html += '<div class="pkg-client-header header-shipping" onclick="pkgToggleClientGroup(this)">';
-    html += '<span>' + escPkg(client) + '</span>';
-    html += '<span class="count">' + items.length + '건</span>';
+  pkgData.shipments_today.forEach(function(item) {
+    html += '<div class="shipment-item">';
+    html += '<div class="shipment-main">';
+    html += '<div class="shipment-client">' + escPkg(item.client || '') + '</div>';
+    html += '<div class="shipment-product">' + escPkg(item.product || '') + '</div>';
     html += '</div>';
-    html += '<div class="pkg-client-items' + (expanded ? '' : ' collapsed') + '">';
-    items.forEach(function(item) {
-      html += '<div class="shipment-item">';
-      html += '<div class="shipment-main">';
-      html += '<div class="shipment-product">' + escPkg(item.product || '') + '</div>';
-      if (item.destination) {
-        html += '<div class="shipment-dest">→ ' + escPkg(item.destination) + '</div>';
-      }
-      html += '</div>';
-      html += '<div class="shipment-meta">';
-      html += '<div class="shipment-qty">' + formatPkgQty(item.qty) + '</div>';
-      if (item.status) {
-        html += '<div class="shipment-status">' + escPkg(item.status) + '</div>';
-      }
-      html += '</div>';
-      html += '</div>';
-    });
-    html += '</div></div>';
+    html += '<div class="shipment-meta">';
+    html += '<div class="shipment-qty">' + formatPkgQty(item.qty) + '</div>';
+    if (item.status) {
+      html += '<div class="shipment-status">' + escPkg(item.status) + '</div>';
+    }
+    html += '</div>';
+    html += '</div>';
   });
   container.innerHTML = html;
 }
@@ -2768,26 +2588,14 @@ function handlePkgSearch(q) {
   var hint = document.getElementById('pkgSearchHint');
   var resultHint = document.getElementById('pkgResultHint');
   var orderList = document.getElementById('pkgOrderList');
-  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
 
   if (q.length < 1) {
     hint.style.display = 'none';
-    // 검색어 비우면 정적 섹션 복원 + 기본 화면으로 복귀
-    if (shipmentSection) shipmentSection.style.display = '';
-    pkgRenderDefaultByClient();
+    resultHint.style.display = 'block';
+    orderList.innerHTML = '';
     return;
   }
   resultHint.style.display = 'none';
-
-  // 검색 시 KPI 필터 + 정적 출고예정 섹션 숨김 (중복 표시 방지)
-  if (pkgCurrentFilter) {
-    pkgCurrentFilter = null;
-    var cards = document.querySelectorAll('#sectorPackage .kpi-card');
-    cards.forEach(function(c) { c.classList.remove('selected'); });
-    var banner = document.getElementById('pkgFilterBanner');
-    if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
-  }
-  if (shipmentSection) shipmentSection.style.display = 'none';
 
   if (!pkgData || !pkgData.orders) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-text">데이터 없음</div></div>';
@@ -2808,8 +2616,7 @@ function handlePkgSearch(q) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">&#x1F50D;</div><div class="nr-text">\'' + escPkg(q) + '\' 검색 결과가 없습니다</div></div>';
     return;
   }
-  // 검색 결과: 모두 펼침 (사용자가 검색했으니 즉시 보여줌)
-  orderList.innerHTML = pkgRenderClientGrouped(results, 'waiting', true);
+  orderList.innerHTML = results.map(renderPkgOrderCard).join('');
 }
 
 function renderPkgOrderCard(order) {
@@ -2819,8 +2626,6 @@ function renderPkgOrderCard(order) {
   html += '<div class="card-header">';
   html += '<div class="mgmt-no">' + escPkg(order.mgmt_no || '') + '</div>';
   html += '<div class="card-badges">';
-  if (order.machine) html += '<span class="badge machine">' + escPkg(order.machine) + '</span>';
-  if (order.is_stale) html += '<span class="badge stale">⚠ ' + (order.stale_days || '') + '일 경과</span>';
   if (order.badges && order.badges.printing_today) html += '<span class="badge printing">오늘 인쇄 중</span>';
   if (order.badges && order.badges.shipping_today) html += '<span class="badge shipping">출고 예정</span>';
   html += '</div></div>';
@@ -2906,11 +2711,10 @@ function escPkg(s) {
 var pkgCurrentFilter = null;
 
 var PKG_FILTER_META = {
-  in_progress:    { label: '작업 대기중', color: 'navy',   empty: '작업 대기중인 주문 없음' },
+  in_progress:    { label: '진행중',     color: 'navy',   empty: '진행중 주문 없음' },
   printing_today: { label: '오늘 인쇄',   color: 'blue',   empty: '오늘 인쇄 예정 없음' },
   shipping_today: { label: '출고 예정',   color: 'orange', empty: '오늘 출고 예정 없음' },
-  completed_7d:   { label: '최근 7일 완료', color: 'green', empty: '최근 7일 완료 없음' },
-  stale:          { label: '장기 미완료', color: 'red',    empty: '장기 미완료 건 없음' }
+  completed_7d:   { label: '최근 7일 완료', color: 'green', empty: '최근 7일 완료 없음' }
 };
 
 function pkgKpiClick(type, el) {
@@ -2931,10 +2735,6 @@ function pkgKpiClick(type, el) {
   document.getElementById('pkgSearchHint').style.display = 'none';
   document.getElementById('pkgResultHint').style.display = 'none';
 
-  // 필터 모드에서는 정적 "오늘 출고 예정" 섹션 숨김 (중복 표시 방지)
-  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
-  if (shipmentSection) shipmentSection.style.display = 'none';
-
   // 필터 배너
   var meta = PKG_FILTER_META[type];
   var banner = document.getElementById('pkgFilterBanner');
@@ -2951,13 +2751,10 @@ function pkgClearFilter() {
   cards.forEach(function(c) { c.classList.remove('selected'); });
   var banner = document.getElementById('pkgFilterBanner');
   if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
-
-  // 필터 해제 시 정적 "오늘 출고 예정" 섹션 복원
-  var shipmentSection = document.querySelector('#sectorPackage .shipment-section');
-  if (shipmentSection) shipmentSection.style.display = '';
-
-  // 기본 화면(거래처별 작업 대기중)으로 복귀
-  pkgRenderDefaultByClient();
+  var orderList = document.getElementById('pkgOrderList');
+  if (orderList) orderList.innerHTML = '';
+  var resultHint = document.getElementById('pkgResultHint');
+  if (resultHint) resultHint.style.display = 'block';
 }
 
 function pkgRenderFiltered(type) {
@@ -2967,13 +2764,7 @@ function pkgRenderFiltered(type) {
   var items = [];
 
   if (type === 'in_progress') {
-    // 작업 대기중: 미완료 + stale 아닌 것
-    items = (pkgData.orders || []).filter(function(o) { return o.completed_at == null && !o.is_stale; });
-  } else if (type === 'stale') {
-    // 장기 미완료: is_stale 마킹된 것
-    items = (pkgData.orders || []).filter(function(o) { return o.is_stale; });
-    // 가장 오래된 순으로 정렬
-    items.sort(function(a, b) { return (b.stale_days || 0) - (a.stale_days || 0); });
+    items = (pkgData.orders || []).filter(function(o) { return o.completed_at == null; });
   } else if (type === 'printing_today') {
     // printings_today의 mgmt_no를 orders와 매칭, 없으면 printings_today 자체를 표시
     var mgmtSet = {};
@@ -2994,15 +2785,10 @@ function pkgRenderFiltered(type) {
           process_spec: p.process || '',
           progress: {},
           badges: { printing_today: true, shipping_today: false },
-          machine: p.machine || null,
           _isPrintingOnly: true
         });
       }
     });
-    // 매칭된 orders에도 printings에서 machine 정보 보강 (이미 mergeBadges에서 했지만 안전망)
-    var machineMap = {};
-    (pkgData.printings_today || []).forEach(function(p) { if (p.mgmt_no && p.machine) machineMap[p.mgmt_no] = p.machine; });
-    items.forEach(function(o) { if (!o.machine && machineMap[o.mgmt_no]) o.machine = machineMap[o.mgmt_no]; });
   } else if (type === 'completed_7d') {
     var chart = (pkgData.summary && pkgData.summary.recent_7d_chart) || {};
     var validDates = {};
@@ -3020,11 +2806,7 @@ function pkgRenderFiltered(type) {
     orderList.innerHTML = '<div class="no-result"><div class="nr-icon">' + meta.label.slice(0, 1) + '</div><div class="nr-text">' + meta.empty + '</div></div>';
     return;
   }
-  // 필터 결과: 모두 펼침 (사용자가 클릭했으니 즉시 보여줌)
-  var groupType = type === 'stale' ? 'stale' : 'waiting';
-  orderList.innerHTML =
-    '<div class="pkg-default-title">' + meta.label + ' (' + items.length + '건)</div>' +
-    pkgRenderClientGrouped(items, groupType, true);
+  orderList.innerHTML = items.map(renderPkgOrderCard).join('');
 }
 
 function pkgRenderShipmentCards(shipments) {
@@ -3105,18 +2887,16 @@ function pkgHandleFileSelect(event) {
     });
 
     var ready = ['orders', 'printings', 'shipments'].filter(function(t) { return pkgUploadFiles[t]; });
-    var labels = { orders: '수주관리', printings: '인쇄종합', shipments: '출고리스트' };
-    var readyNames = ready.map(function(t) { return labels[t]; });
     var btn = document.getElementById('pkgUploadBtn');
-    btn.disabled = ready.length < 1;
+    btn.disabled = ready.length < 3;
 
     if (errors.length) {
       status.className = 'pkg-upload-status error';
       status.textContent = errors.join('\n');
     } else {
       status.className = 'pkg-upload-status';
-      status.textContent = readyNames.join(' + ') + ' 선택됨 — "변환 및 업로드" 버튼을 눌러주세요.' +
-        (ready.length < 3 ? '\n(나머지는 기존 데이터 유지)' : '');
+      status.textContent = '선택됨: ' + ready.length + '/3' +
+        (ready.length === 3 ? ' — "변환 및 업로드" 버튼을 눌러주세요.' : ' (추가로 ' + (3 - ready.length) + '개 필요)');
     }
   });
 
@@ -3146,97 +2926,25 @@ function pkgMarkFileRow(type, name) {
 async function pkgHandleUpload() {
   var btn = document.getElementById('pkgUploadBtn');
   var status = document.getElementById('pkgUploadStatus');
-  var progress = document.getElementById('pkgUploadProgress');
-  var progressFill = document.getElementById('pkgUploadProgressFill');
-
-  var hasAny = pkgUploadFiles.orders || pkgUploadFiles.printings || pkgUploadFiles.shipments;
-  if (!hasAny) {
+  if (!pkgUploadFiles.orders || !pkgUploadFiles.printings || !pkgUploadFiles.shipments) {
     status.className = 'pkg-upload-status error';
-    status.textContent = '1개 이상의 엑셀 파일을 선택해주세요.';
+    status.textContent = '3개 파일을 모두 선택해주세요.';
     return;
   }
-
-  var uploadedTypes = [];
-  if (pkgUploadFiles.orders) uploadedTypes.push('수주관리');
-  if (pkgUploadFiles.printings) uploadedTypes.push('인쇄종합');
-  if (pkgUploadFiles.shipments) uploadedTypes.push('출고리스트');
 
   btn.disabled = true;
   btn.textContent = '변환 중...';
   btn.className = 'pkg-upload-btn uploading';
   status.className = 'pkg-upload-status';
-  progress.className = 'pkg-upload-progress active';
-  progressFill.style.width = '0%';
-
-  function setProgress(pct, text) {
-    progressFill.style.width = pct + '%';
-    status.textContent = text;
-  }
-  function nextTick() { return new Promise(function(r) { setTimeout(r, 0); }); }
+  status.textContent = '[1/4] 수주관리 파싱 중...';
 
   try {
-    // ── 기존 데이터 로드 (부분 업데이트 베이스) ──
-    var existing = null;
-    if (uploadedTypes.length < 3) {
-      setProgress(5, '기존 데이터 불러오는 중...');
-      await nextTick();
-      try {
-        var dlRes = await sb.storage.from('gabwoo-data').download('data_package.json');
-        if (dlRes.data) {
-          existing = JSON.parse(await dlRes.data.text());
-        }
-      } catch(e) {}
-      if (!existing && pkgData) {
-        existing = pkgData; // 메모리 캐시 fallback
-      }
-    }
+    var orders = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
+    status.textContent = '[2/4] 인쇄일정관리 파싱 중...';
+    var printings = pkgJsParsePrintingsToday(pkgUploadFiles.printings.workbook);
+    status.textContent = '[3/4] 출고리스트 파싱 중...';
+    var shipments = pkgJsParseShipmentsToday(pkgUploadFiles.shipments.workbook);
 
-    // ── 수주관리 파싱 (새 파일 or 기존 유지) ──
-    var orders, cleanStats = { completed_by_note: 0, canceled: 0 };
-    if (pkgUploadFiles.orders) {
-      setProgress(15, '[변환] 수주관리 파싱 중...');
-      await nextTick();
-      var ordersRaw = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
-      setProgress(25, '오래된/취소 건 정리 중...');
-      await nextTick();
-      var cleanResult = pkgJsCleanOrders(ordersRaw);
-      orders = cleanResult.orders;
-      cleanStats = cleanResult.stats;
-    } else if (existing && existing.orders) {
-      orders = existing.orders;
-      // 기존 배지 초기화 (아래서 다시 계산)
-      orders.forEach(function(o) { o.badges = { printing_today: false, shipping_today: false }; });
-    } else {
-      orders = [];
-    }
-
-    // ── 인쇄종합 파싱 (새 파일 or 기존 유지) ──
-    var printings;
-    if (pkgUploadFiles.printings) {
-      setProgress(35, '[변환] 인쇄일정관리 파싱 중...');
-      await nextTick();
-      printings = pkgJsParsePrintingsToday(pkgUploadFiles.printings.workbook);
-    } else if (existing && existing.printings_today) {
-      printings = existing.printings_today;
-    } else {
-      printings = [];
-    }
-
-    // ── 출고리스트 파싱 (새 파일 or 기존 유지) ──
-    var shipments;
-    if (pkgUploadFiles.shipments) {
-      setProgress(55, '[변환] 출고리스트 파싱 중...');
-      await nextTick();
-      shipments = pkgJsParseShipmentsToday(pkgUploadFiles.shipments.workbook);
-    } else if (existing && existing.shipments_today) {
-      shipments = existing.shipments_today;
-    } else {
-      shipments = [];
-    }
-
-    // ── 병합 + 요약 계산 ──
-    setProgress(70, '데이터 병합 중...');
-    await nextTick();
     pkgJsMergeBadges(orders, printings, shipments);
     var summary = pkgJsComputeSummary(orders, printings, shipments);
 
@@ -3256,23 +2964,16 @@ async function pkgHandleUpload() {
       if (session.data.session) output.uploaded_by = session.data.session.user.email;
     } catch(e) {}
 
-    setProgress(85, '[4/4] Supabase Storage 업로드 중...');
-    await nextTick();
+    status.textContent = '[4/4] Supabase Storage 업로드 중...';
     var jsonBlob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
     var uploadRes = await sb.storage.from('gabwoo-data').upload('data_package.json', jsonBlob, {
       upsert: true,
-      contentType: 'application/json',
-      cacheControl: '0'
+      contentType: 'application/json'
     });
     if (uploadRes.error) throw uploadRes.error;
 
-    var cleanMsg = '';
-    if (cleanStats.completed_by_note + cleanStats.canceled > 0) {
-      cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건 제외)';
-    }
-    var updateMsg = uploadedTypes.length < 3 ? ' [갱신: ' + uploadedTypes.join('+') + ']' : '';
-    setProgress(100, '✅ 업데이트 완료!' + updateMsg + ' 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건, 장기미완료 ' + (summary.stale || 0) + '건' + cleanMsg);
     status.className = 'pkg-upload-status success';
+    status.textContent = '✅ 업데이트 완료! 진행중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건';
 
     // 화면 새로고침
     pkgData = output;
@@ -3285,14 +2986,10 @@ async function pkgHandleUpload() {
       document.getElementById('pkgFileStatus' + suf).textContent = '⬜';
       document.getElementById('pkgFileRow' + suf).classList.remove('ready');
     });
-
-    // 2초 후 진행률 바 숨김
-    setTimeout(function() { progress.className = 'pkg-upload-progress'; }, 2000);
   } catch(e) {
     console.error(e);
     status.className = 'pkg-upload-status error';
     status.textContent = '❌ 오류: ' + (e.message || e);
-    progress.className = 'pkg-upload-progress';
   }
 
   btn.disabled = false;
@@ -3432,8 +3129,7 @@ function pkgJsParsePrintingsToday(workbook) {
   var ws = workbook.Sheets['인쇄일정관리'];
   var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: false, raw: true });
 
-  // 첫 번째 헤더 행(컬럼명) 탐지 — 모든 호기 섹션이 동일한 컬럼 구조 사용
-  var firstHeaderIdx = -1;
+  var headerIdx = -1;
   var headerMap = {};
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
@@ -3443,7 +3139,7 @@ function pkgJsParsePrintingsToday(workbook) {
       if (row[j] != null && String(row[j]).indexOf('계획일') !== -1) { found = true; break; }
     }
     if (found) {
-      firstHeaderIdx = i;
+      headerIdx = i;
       for (var k = 0; k < row.length; k++) {
         if (row[k] != null) {
           var key = String(row[k]).trim();
@@ -3453,7 +3149,7 @@ function pkgJsParsePrintingsToday(workbook) {
       break;
     }
   }
-  if (firstHeaderIdx < 0) return [];
+  if (headerIdx < 0) return [];
 
   function idx() {
     for (var a = 0; a < arguments.length; a++) {
@@ -3468,45 +3164,13 @@ function pkgJsParsePrintingsToday(workbook) {
       iDetail = idx('공정상세'), iDeadline = idx('납품예정', '납기예정', '납기'),
       iQty = idx('수주량'), iSets = idx('벌수'), iNet = idx('정미량'), iNote = idx('비고');
 
-  // 호기 섹션 헤더 패턴: A열에 "인쇄N호계획" 형식
-  var machineRe = /인쇄\s*(\d+)호계획/;
-
   var todayStr = pkgJsDateStr(new Date());
   var out = [];
-  var currentMachine = null;
-
-  // 첫 번째 호기 헤더 찾기 (보통 첫 번째 header 행 바로 앞)
-  for (var i2 = 0; i2 <= firstHeaderIdx; i2++) {
-    var row0 = rows[i2];
-    if (!row0 || !row0[0]) continue;
-    var m0 = String(row0[0]).match(machineRe);
-    if (m0) currentMachine = m0[1] + '호기';
-  }
-
-  for (var i = 0; i < rows.length; i++) {
+  for (var i = headerIdx + 1; i < rows.length; i++) {
     var row = rows[i];
-    if (!row) continue;
-
-    // 호기 섹션 헤더 감지
-    if (row[0] != null) {
-      var m = String(row[0]).match(machineRe);
-      if (m) {
-        currentMachine = m[1] + '호기';
-        continue;
-      }
-    }
-
-    // 헤더 행 스킵 (반복 헤더)
-    var isHeader = false;
-    for (var j = 0; j < row.length; j++) {
-      if (row[j] != null && String(row[j]).indexOf('계획일') !== -1) { isHeader = true; break; }
-    }
-    if (isHeader) continue;
-
-    if (iPlan < 0 || iPlan >= row.length) continue;
+    if (!row || iPlan < 0 || iPlan >= row.length) continue;
     var planDateStr = pkgJsDateStr(row[iPlan]);
     if (planDateStr !== todayStr) continue;
-
     function get(ix) { return (ix < 0 || ix >= row.length) ? null : row[ix]; }
     out.push({
       plan_date: planDateStr,
@@ -3521,8 +3185,7 @@ function pkgJsParsePrintingsToday(workbook) {
       qty: pkgJsInt(get(iQty)),
       sets: pkgJsInt(get(iSets)),
       net_qty: pkgJsInt(get(iNet)),
-      note: pkgJsText(get(iNote)),
-      machine: currentMachine  // 호기 정보
+      note: pkgJsText(get(iNote))
     });
   }
   return out;
@@ -3588,25 +3251,6 @@ function pkgJsParseShipmentsToday(workbook) {
     function get(ix) { return (ix < 0 || ix >= row.length) ? null : row[ix]; }
     var client = pkgJsText(get(iClient));
     if (!client) continue;
-
-    // 데이터 정리:
-    // 1. 따옴표(", 〃, ")만 있는 셀 → 이전 거래처명 상속 (엑셀 ditto 표기)
-    // 2. "합계", "소계", "총계" 같은 합계 행 → 스킵
-    // 3. 거래처명이 매우 짧거나(1글자 이하) 숫자만 → 스킵
-    var clientTrim = client.replace(/\s+/g, '');
-    if (/^["〃"]+$/.test(clientTrim)) {
-      // ditto: 이전 거래처명 사용
-      if (out.length > 0) {
-        client = out[out.length - 1].client;
-      } else {
-        continue; // 첫 행이 ditto면 스킵
-      }
-    } else if (/^(합계|소계|총계|합\s*계|소\s*계|총\s*계)/.test(clientTrim)) {
-      continue; // 합계 행 스킵
-    } else if (clientTrim.length <= 1 || /^\d+$/.test(clientTrim)) {
-      continue; // 너무 짧거나 숫자만
-    }
-
     out.push({
       sheet_date: sheetDateStr,
       client: client,
@@ -3619,79 +3263,16 @@ function pkgJsParseShipmentsToday(workbook) {
   return out;
 }
 
-// orders 정리: 비고 기반 완료 처리, 취소 제외, 장기미완료는 별도 마킹(보존)
-function pkgJsCleanOrders(orders) {
-  var stats = { completed_by_note: 0, canceled: 0, stale: 0, kept: 0 };
-  var today = new Date();
-  var todayMs = today.getTime();
-  var STALE_DAYS = 30;
-
-  var cleaned = [];
-  orders.forEach(function(o) {
-    var note = (o.note || '').replace(/\s+/g, '');
-
-    // 1. 비고에 "취소" 포함 → 완전 제외
-    if (note.indexOf('취소') !== -1) {
-      stats.canceled++;
-      return;
-    }
-
-    // 2. 이미 completed_at이 있으면 그대로 유지
-    if (o.completed_at) {
-      stats.kept++;
-      cleaned.push(o);
-      return;
-    }
-
-    // 3. 비고에 "완료" 포함 → 완료 처리 (deadline을 completed_at으로 사용)
-    if (note.indexOf('완료') !== -1) {
-      o.completed_at = o.deadline || pkgJsDateStr(today);
-      o.completed_by_note = true;
-      stats.completed_by_note++;
-      cleaned.push(o);
-      return;
-    }
-
-    // 4. 납기가 STALE_DAYS 이상 지난 미완료 → is_stale 마킹 (보존, 별도 카드로 분류)
-    if (o.deadline) {
-      var dl = new Date(o.deadline);
-      if (!isNaN(dl.getTime())) {
-        var daysPast = (todayMs - dl.getTime()) / 86400000;
-        if (daysPast > STALE_DAYS) {
-          o.is_stale = true;
-          o.stale_days = Math.floor(daysPast);
-          stats.stale++;
-          cleaned.push(o);
-          return;
-        }
-      }
-    }
-
-    // 그 외는 진짜 작업 대기중
-    stats.kept++;
-    cleaned.push(o);
-  });
-
-  return { orders: cleaned, stats: stats };
-}
-
 function pkgJsMergeBadges(orders, printings, shipments) {
-  // mgmt_no → 인쇄 정보(machine 포함) 맵
-  var printingByMgmt = {};
-  printings.forEach(function(p) {
-    if (p.mgmt_no) printingByMgmt[p.mgmt_no] = p;
-  });
+  var printingMgmt = {};
+  printings.forEach(function(p) { if (p.mgmt_no) printingMgmt[p.mgmt_no] = true; });
   var shipProducts = {};
   shipments.forEach(function(s) {
     var n = pkgJsNormProduct(s.product);
     if (n) shipProducts[n] = true;
   });
   orders.forEach(function(o) {
-    var pInfo = printingByMgmt[o.mgmt_no];
-    if (pInfo) {
-      o.badges.printing_today = true;
-      if (pInfo.machine) o.machine = pInfo.machine;  // 호기 부착
-    }
+    if (printingMgmt[o.mgmt_no]) o.badges.printing_today = true;
     var n = pkgJsNormProduct(o.product);
     if (n && shipProducts[n]) o.badges.shipping_today = true;
   });
@@ -3701,7 +3282,6 @@ function pkgJsComputeSummary(orders, printings, shipments) {
   var today = new Date();
   var todayMs = today.getTime();
   var inProgress = 0;
-  var stale = 0;
   var chart = {};
   for (var k = 6; k >= 0; k--) {
     var d = new Date(todayMs - k * 86400000);
@@ -3709,9 +3289,7 @@ function pkgJsComputeSummary(orders, printings, shipments) {
   }
   var clients = {};
   orders.forEach(function(o) {
-    if (o.is_stale) {
-      stale++;
-    } else if (o.completed_at == null) {
+    if (o.completed_at == null) {
       inProgress++;
       if (o.client) clients[o.client] = (clients[o.client] || 0) + 1;
     } else if (chart[o.completed_at] != null) {
@@ -3725,7 +3303,6 @@ function pkgJsComputeSummary(orders, printings, shipments) {
     .forEach(function(k) { sortedClients[k] = clients[k]; });
   return {
     in_progress: inProgress,
-    stale: stale,
     printing_today: printings.length,
     shipping_today: shipments.length,
     completed_7d: completed7d,
