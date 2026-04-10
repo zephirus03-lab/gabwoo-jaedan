@@ -1359,8 +1359,8 @@ body {
     <div class="pkg-upload-panel">
       <div class="pkg-upload-title">🗂️ 패키지 엑셀 업로드</div>
       <div class="pkg-upload-desc">
-        수주관리 + 인쇄종합 + 출고품목리스트 엑셀 파일 3개를 선택하세요.<br>
-        (파일명 자동 인식 — 순서 무관)
+        변경된 엑셀 파일만 선택하세요. (1개~3개, 순서 무관)<br>
+        선택하지 않은 파일은 기존 데이터가 유지됩니다.
       </div>
 
       <div class="pkg-file-row" id="pkgFileRowOrders">
@@ -3105,16 +3105,18 @@ function pkgHandleFileSelect(event) {
     });
 
     var ready = ['orders', 'printings', 'shipments'].filter(function(t) { return pkgUploadFiles[t]; });
+    var labels = { orders: '수주관리', printings: '인쇄종합', shipments: '출고리스트' };
+    var readyNames = ready.map(function(t) { return labels[t]; });
     var btn = document.getElementById('pkgUploadBtn');
-    btn.disabled = ready.length < 3;
+    btn.disabled = ready.length < 1;
 
     if (errors.length) {
       status.className = 'pkg-upload-status error';
       status.textContent = errors.join('\n');
     } else {
       status.className = 'pkg-upload-status';
-      status.textContent = '선택됨: ' + ready.length + '/3' +
-        (ready.length === 3 ? ' — "변환 및 업로드" 버튼을 눌러주세요.' : ' (추가로 ' + (3 - ready.length) + '개 필요)');
+      status.textContent = readyNames.join(' + ') + ' 선택됨 — "변환 및 업로드" 버튼을 눌러주세요.' +
+        (ready.length < 3 ? '\n(나머지는 기존 데이터 유지)' : '');
     }
   });
 
@@ -3147,11 +3149,17 @@ async function pkgHandleUpload() {
   var progress = document.getElementById('pkgUploadProgress');
   var progressFill = document.getElementById('pkgUploadProgressFill');
 
-  if (!pkgUploadFiles.orders || !pkgUploadFiles.printings || !pkgUploadFiles.shipments) {
+  var hasAny = pkgUploadFiles.orders || pkgUploadFiles.printings || pkgUploadFiles.shipments;
+  if (!hasAny) {
     status.className = 'pkg-upload-status error';
-    status.textContent = '3개 파일을 모두 선택해주세요.';
+    status.textContent = '1개 이상의 엑셀 파일을 선택해주세요.';
     return;
   }
+
+  var uploadedTypes = [];
+  if (pkgUploadFiles.orders) uploadedTypes.push('수주관리');
+  if (pkgUploadFiles.printings) uploadedTypes.push('인쇄종합');
+  if (pkgUploadFiles.shipments) uploadedTypes.push('출고리스트');
 
   btn.disabled = true;
   btn.textContent = '변환 중...';
@@ -3167,27 +3175,66 @@ async function pkgHandleUpload() {
   function nextTick() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
   try {
-    setProgress(5, '[1/4] 수주관리 파싱 준비...');
-    await nextTick();
+    // ── 기존 데이터 로드 (부분 업데이트 베이스) ──
+    var existing = null;
+    if (uploadedTypes.length < 3) {
+      setProgress(5, '기존 데이터 불러오는 중...');
+      await nextTick();
+      try {
+        var dlRes = await sb.storage.from('gabwoo-data').download('data_package.json');
+        if (dlRes.data) {
+          existing = JSON.parse(await dlRes.data.text());
+        }
+      } catch(e) {}
+      if (!existing && pkgData) {
+        existing = pkgData; // 메모리 캐시 fallback
+      }
+    }
 
-    setProgress(15, '[1/4] 수주관리 파싱 중...');
-    await nextTick();
-    var ordersRaw = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
+    // ── 수주관리 파싱 (새 파일 or 기존 유지) ──
+    var orders, cleanStats = { completed_by_note: 0, canceled: 0 };
+    if (pkgUploadFiles.orders) {
+      setProgress(15, '[변환] 수주관리 파싱 중...');
+      await nextTick();
+      var ordersRaw = pkgJsParseOrders(pkgUploadFiles.orders.workbook);
+      setProgress(25, '오래된/취소 건 정리 중...');
+      await nextTick();
+      var cleanResult = pkgJsCleanOrders(ordersRaw);
+      orders = cleanResult.orders;
+      cleanStats = cleanResult.stats;
+    } else if (existing && existing.orders) {
+      orders = existing.orders;
+      // 기존 배지 초기화 (아래서 다시 계산)
+      orders.forEach(function(o) { o.badges = { printing_today: false, shipping_today: false }; });
+    } else {
+      orders = [];
+    }
 
-    setProgress(25, '오래된/취소 건 정리 중...');
-    await nextTick();
-    var cleanResult = pkgJsCleanOrders(ordersRaw);
-    var orders = cleanResult.orders;
-    var cleanStats = cleanResult.stats;
+    // ── 인쇄종합 파싱 (새 파일 or 기존 유지) ──
+    var printings;
+    if (pkgUploadFiles.printings) {
+      setProgress(35, '[변환] 인쇄일정관리 파싱 중...');
+      await nextTick();
+      printings = pkgJsParsePrintingsToday(pkgUploadFiles.printings.workbook);
+    } else if (existing && existing.printings_today) {
+      printings = existing.printings_today;
+    } else {
+      printings = [];
+    }
 
-    setProgress(35, '[2/4] 인쇄일정관리 파싱 중...');
-    await nextTick();
-    var printings = pkgJsParsePrintingsToday(pkgUploadFiles.printings.workbook);
+    // ── 출고리스트 파싱 (새 파일 or 기존 유지) ──
+    var shipments;
+    if (pkgUploadFiles.shipments) {
+      setProgress(55, '[변환] 출고리스트 파싱 중...');
+      await nextTick();
+      shipments = pkgJsParseShipmentsToday(pkgUploadFiles.shipments.workbook);
+    } else if (existing && existing.shipments_today) {
+      shipments = existing.shipments_today;
+    } else {
+      shipments = [];
+    }
 
-    setProgress(55, '[3/4] 출고리스트 파싱 중...');
-    await nextTick();
-    var shipments = pkgJsParseShipmentsToday(pkgUploadFiles.shipments.workbook);
-
+    // ── 병합 + 요약 계산 ──
     setProgress(70, '데이터 병합 중...');
     await nextTick();
     pkgJsMergeBadges(orders, printings, shipments);
@@ -3223,7 +3270,8 @@ async function pkgHandleUpload() {
     if (cleanStats.completed_by_note + cleanStats.canceled > 0) {
       cleanMsg = ' (정리: 비고완료 ' + cleanStats.completed_by_note + '건, 취소 ' + cleanStats.canceled + '건 제외)';
     }
-    setProgress(100, '✅ 업데이트 완료! 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건, 장기미완료 ' + (summary.stale || 0) + '건' + cleanMsg);
+    var updateMsg = uploadedTypes.length < 3 ? ' [갱신: ' + uploadedTypes.join('+') + ']' : '';
+    setProgress(100, '✅ 업데이트 완료!' + updateMsg + ' 작업 대기중 ' + summary.in_progress + '건, 오늘인쇄 ' + summary.printing_today + '건, 출고 ' + summary.shipping_today + '건, 완료(7일) ' + summary.completed_7d + '건, 장기미완료 ' + (summary.stale || 0) + '건' + cleanMsg);
     status.className = 'pkg-upload-status success';
 
     // 화면 새로고침
