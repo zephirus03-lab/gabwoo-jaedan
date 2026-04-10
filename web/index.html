@@ -2436,19 +2436,30 @@ function showVerifyBadge(result) {
 }
 
 // 비밀번호 복구 이벤트 감지
+var isRecoveryMode = false;
 sb.auth.onAuthStateChange(function(event, session) {
   if (event === 'PASSWORD_RECOVERY') {
+    isRecoveryMode = true;
     showNewPasswordForm();
   }
 });
 
 // 페이지 로드 시 세션 확인
 async function checkSession() {
-  // URL에 recovery 토큰이 있으면 Supabase가 자동으로 PASSWORD_RECOVERY 이벤트를 발생시킴
-  // 해시 파라미터에 type=recovery가 있는지 체크
-  var hash = window.location.hash;
-  if (hash && hash.includes('type=recovery')) {
-    // onAuthStateChange에서 처리되므로 여기서는 대기
+  // URL에 recovery 토큰이 있는지 확인 (해시 또는 쿼리 파라미터)
+  var fullUrl = window.location.href;
+  var isRecoveryUrl = fullUrl.includes('type=recovery') ||
+                      fullUrl.includes('type=magiclink') ||
+                      fullUrl.includes('access_token') && fullUrl.includes('type=recovery');
+
+  if (isRecoveryUrl) {
+    // onAuthStateChange의 PASSWORD_RECOVERY 이벤트를 기다림
+    // 3초 안에 이벤트가 안 오면 직접 처리
+    setTimeout(function() {
+      if (!isRecoveryMode) {
+        showNewPasswordForm();
+      }
+    }, 3000);
     return;
   }
 
