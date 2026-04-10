@@ -2464,6 +2464,23 @@ async function checkSession() {
   }
 
   var res = await sb.auth.getSession();
+
+  // 세션이 없으면 localStorage에 저장된 세션으로 복구 시도 (Edge 절전 탭 대응)
+  if (!res.data.session) {
+    var savedSession = window.localStorage.getItem('gabwoo-auth');
+    if (savedSession) {
+      try {
+        var parsed = JSON.parse(savedSession);
+        if (parsed.refresh_token) {
+          var refreshRes = await sb.auth.refreshSession({ refresh_token: parsed.refresh_token });
+          if (refreshRes.data.session) {
+            res = refreshRes;
+          }
+        }
+      } catch(e) { /* 파싱 실패 무시 */ }
+    }
+  }
+
   if (res.data.session) {
     var email = res.data.session.user.email;
     var approved = await checkApproval(email);
