@@ -15,6 +15,9 @@ AX 전환 계획/
 .vercel
 .claude/agent-memory/
 
+# 별도 레포로 분리된 서브 프로젝트
+견적계산기/
+
 # 작업용 임시 파일
 web_deploy/
 
