@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>갑우문화사 AX 전환 — 전체 공정 일정표</title>
+<style>
+  @page { size: landscape; margin: 12mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 12px; color: #1e293b; background: #fff; padding: 32px; }
+
+  h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+  .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; font-style: italic; }
+
+  /* ─── Gantt Container ─── */
+  .gantt-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+  table.gantt { border-collapse: collapse; width: 100%; min-width: 1100px; }
+  table.gantt th, table.gantt td { border: 1px solid #e2e8f0; text-align: center; padding: 0; height: 28px; }
+
+  /* Header rows */
+  .gantt thead th { background: #1e3a5f; color: #fff; font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 2; }
+  .gantt thead th.corner { background: #1e3a5f; text-align: left; padding-left: 12px; min-width: 200px; position: sticky; left: 0; z-index: 3; }
+  .gantt thead .day-row th { background: #2a4a70; font-size: 10px; font-weight: 500; }
+  .gantt thead .day-row th.weekend { background: #334d6e; color: #94a3b8; }
+  .gantt thead .day-row th.today { background: #dc2626; color: #fff; font-weight: 700; }
+
+  /* Task name column */
+  td.task-name { text-align: left; padding: 4px 10px; font-size: 12px; white-space: nowrap; position: sticky; left: 0; background: #fff; z-index: 1; border-right: 2px solid #cbd5e1; }
+  td.task-name.section { background: #f1f5f9; font-weight: 700; color: #1e3a5f; font-size: 12px; border-bottom: 2px solid #cbd5e1; }
+
+  /* Bar cells */
+  td.bar { padding: 0; position: relative; }
+
+  /* Color fills */
+  .fill-blue    { background: #3b82f6; }
+  .fill-blue-l  { background: #93c5fd; }
+  .fill-green   { background: #22c55e; }
+  .fill-green-l { background: #86efac; }
+  .fill-orange  { background: #f97316; }
+  .fill-orange-l{ background: #fdba74; }
+  .fill-violet  { background: #8b5cf6; }
+  .fill-violet-l{ background: #c4b5fd; }
+  .fill-red     { background: #ef4444; }
+  .fill-amber   { background: #f59e0b; }
+  .fill-teal    { background: #14b8a6; }
+  .fill-teal-l  { background: #5eead4; }
+
+  /* Weekend column */
+  td.weekend { background: #f8fafc; }
+
+  /* Milestone diamond */
+  .milestone { position: relative; }
+  .milestone::after {
+    content: '◆';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    color: #dc2626;
+    z-index: 1;
+  }
+
+  /* ─── Legend ─── */
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .legend-color { width: 20px; height: 12px; border-radius: 2px; }
+  .legend-ms { font-size: 14px; color: #dc2626; }
+
+  /* ─── Bottom Notes ─── */
+  .notes { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .note-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; }
+  .note-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .note-card p { font-size: 12px; color: #475569; line-height: 1.6; }
+  .note-card .period { color: #3b82f6; font-weight: 600; }
+  .note-card.highlight { border-left: 4px solid #dc2626; }
+
+  .footer { margin-top: 24px; text-align: right; font-size: 11px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<h1>갑우문화사 AX 전환 — 전체 공정 일정표</h1>
+<div class="subtitle">AX Transformation Master Timeline | 2026년 4월 14일 ~ 6월 27일 (11주)</div>
+
+<div class="gantt-wrap">
+<table class="gantt" id="gantt">
+<!-- Filled by JS -->
+</table>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-color fill-blue"></div>견적계산기 for 출판</div>
+  <div class="legend-item"><div class="legend-color fill-green"></div>경영 대시보드</div>
+  <div class="legend-item"><div class="legend-color fill-orange"></div>AI 전환 교육 (1차 4주 + 2차 4주)</div>
+  <div class="legend-item"><div class="legend-color fill-violet"></div>작업지시서 (각부서 논의 후 결정)</div>
+  <div class="legend-item"><div class="legend-color fill-teal"></div>견적계산기 for 패키지</div>
+  <div class="legend-item"><div class="legend-color fill-amber"></div>작업지시서 확장 (패키지)</div>
+  <div class="legend-item"><span class="legend-ms">◆</span> 주요 마일스톤</div>
+</div>
+
+<!-- Bottom Notes -->
+<div class="notes">
+  <div class="note-card highlight">
+    <h3>🎯 마일스톤 1 — 세금계산서 일괄 등록 Go-Live (출판) <span class="period">(5/10)</span></h3>
+    <p>출판사업부 영업자 12명이 견적계산기로 세금계산서를 일괄 등록. 경영 대시보드에서 이번달 현황 즉시 확인 가능. ERP 수기 입력 제거.</p>
+  </div>
+  <div class="note-card">
+    <h3>📚 AI 전환 교육 1차 <span class="period">(4/21 ~ 5/16, 4주)</span></h3>
+    <p>각 부서 챔피언 + 대표이사 참여. AI 기초, 업무 자동화 실습, 부서별 프로젝트 기획. 1차 성과를 리뷰한 뒤 2차 4주 교육으로 이어짐.</p>
+  </div>
+  <div class="note-card">
+    <h3>📚 AI 전환 교육 2차 <span class="period">(5/26 ~ 6/20, 4주)</span></h3>
+    <p>1차 성과 기반으로 심화 교육. 프롬프트 엔지니어링, 부서별 자동화 파이프라인 구축, 데이터 분석 활용. 최종 발표 후 2차 챔피언 확정 및 전사 확산.</p>
+  </div>
+  <div class="note-card">
+    <h3>📋 작업지시서 전환 <span class="period">(각부서 논의 후 결정)</span></h3>
+    <p>작업지시서 전환은 출판·패키지 각 부서와 논의 후 결정. 견적계산기 안착 이후 부서별 요건을 수렴하여 전환 여부와 시점을 확정합니다.</p>
+  </div>
+  <div class="note-card highlight">
+    <h3>🎯 마일스톤 2 — 세금계산서 일괄 등록 Go-Live (패키지) <span class="period">(6/9)</span></h3>
+    <p>패키지사업부 견적계산기 가동. 화장품 단상자·쇼핑백 BOM 기반. 세금계산서 일괄 등록 동일 적용.</p>
+  </div>
+</div>
+
+<div class="footer">
+  갑우문화사 AX 전환 프로젝트 | 작성일: 2026-04-14 | 작성: Jack (최준호)
+</div>
+
+<script>
+// ═══ Date range: 2026-04-14 ~ 2026-06-27 ═══
+const START = new Date(2026, 3, 14); // Mon Apr 14
+const END   = new Date(2026, 5, 27); // Fri Jun 27
+
+// Generate all dates
+const dates = [];
+for (let d = new Date(START); d <= END; d.setDate(d.getDate() + 1)) {
+  dates.push(new Date(d));
+}
+
+const TODAY = new Date(2026, 3, 14);
+
+// Day names
+const DAY_KR = ['일','월','화','수','목','금','토'];
+
+// ═══ Tasks ═══
+// Each task: { name, track, color, start: [m,d], end: [m,d], milestone?: bool, section?: bool }
+const tasks = [
+  // ── Section A ──
+  { name: '트랙 A — 견적계산기 for 출판 (세금계산서 일괄 등록)', section: true },
+  { name: 'G2SYS 미팅 + ERP 스펙 확인',        color: 'fill-blue',   start: [4,14], end: [4,14] },
+  { name: 'ERP 일괄등록 스펙 수령',             color: 'fill-blue',   start: [4,15], end: [4,17] },
+  { name: 'P0 이슈 수정 (RLS·시퀀스·참조)',     color: 'fill-blue',   start: [4,14], end: [4,18] },
+  { name: '단가 엔진 검증 (실제 견적서 대조)',   color: 'fill-blue',   start: [4,17], end: [4,25] },
+  { name: '영업자 1:1 인터뷰 + 단가표 수령',    color: 'fill-blue-l', start: [4,21], end: [5,8] },
+  { name: '거래처별 단가 오버라이드 구현',       color: 'fill-blue',   start: [4,25], end: [5,2] },
+  { name: '견적 편집·할인율·내보내기 완성',      color: 'fill-blue',   start: [4,28], end: [5,5] },
+  { name: '파일럿 (영업자 2~3명, 실건 10건+)',   color: 'fill-blue-l', start: [5,5],  end: [5,9] },
+  { name: '◆ 세금계산서 일괄 등록 Go-Live (출판)', color: 'fill-red',   start: [5,10], end: [5,10], milestone: true },
+
+  // ── Section B ──
+  { name: '트랙 B — 경영 대시보드', section: true },
+  { name: '대시보드 쿼리 최적화 + 필터 수정',   color: 'fill-green',  start: [4,21], end: [4,28] },
+  { name: '실데이터 연동 + 3패널 완성',          color: 'fill-green',  start: [4,28], end: [5,5] },
+  { name: '귀속회사·영업자 필터 작동',           color: 'fill-green-l',start: [5,5],  end: [5,9] },
+  { name: '◆ 이번달 현황 즉시 확인 가능',       color: 'fill-red',    start: [5,10], end: [5,10], milestone: true },
+
+  // ── Section C ──
+  { name: '트랙 C — AI 전환 교육', section: true },
+  { name: '1차 W1: AI 기초 + 클로드 코드 입문', color: 'fill-orange', start: [4,21], end: [4,25] },
+  { name: '1차 W2: 업무 자동화 실습',           color: 'fill-orange', start: [4,28], end: [5,2] },
+  { name: '1차 W3: 부서별 프로젝트 기획',       color: 'fill-orange', start: [5,5],  end: [5,9] },
+  { name: '1차 W4: 프로젝트 발표 + 챔피언 선정',color: 'fill-orange', start: [5,12], end: [5,16] },
+  { name: '◆ 1차 챔피언 정식 임명',             color: 'fill-red',    start: [5,16], end: [5,16], milestone: true },
+  { name: '성과 리뷰 + 2차 교육 설계',          color: 'fill-orange-l',start:[5,19], end: [5,23] },
+  { name: '2차 W1: 심화 프롬프트 엔지니어링',   color: 'fill-orange', start: [5,26], end: [5,30] },
+  { name: '2차 W2: 부서별 자동화 파이프라인',   color: 'fill-orange', start: [6,2],  end: [6,6] },
+  { name: '2차 W3: 데이터 분석 + 대시보드 활용',color: 'fill-orange', start: [6,9],  end: [6,13] },
+  { name: '2차 W4: 최종 발표 + 2차 챔피언 확정',color: 'fill-orange', start: [6,16], end: [6,20] },
+  { name: '◆ 2차 챔피언 확정 + 전사 확산 개시', color: 'fill-red',    start: [6,20], end: [6,20], milestone: true },
+
+  // ── Section D ──
+  { name: '트랙 D — 작업지시서 (각부서 논의 후 결정)', section: true },
+  { name: '출판 작업지시서 요건 논의 (부서별)',  color: 'fill-violet-l',start:[5,12], end: [5,16] },
+  { name: '작업지시서 기능 설계 + 개발',         color: 'fill-violet', start: [5,19], end: [5,30] },
+  { name: '생산관리부 연동 테스트',              color: 'fill-violet-l',start:[5,26], end: [5,30] },
+  { name: '◆ 작업지시서 전환 여부 확정 (출판)',  color: 'fill-red',    start: [6,2],  end: [6,2], milestone: true },
+
+  // ── Section E ──
+  { name: '트랙 E — 견적계산기 for 패키지 (세금계산서 일괄 등록)', section: true },
+  { name: '패키지 BOM·단가 조사 + 인터뷰',      color: 'fill-teal-l', start: [5,12], end: [5,23] },
+  { name: '패키지 단가 엔진 개발',              color: 'fill-teal',   start: [5,19], end: [5,30] },
+  { name: '패키지 파일럿 + 검증',               color: 'fill-teal-l', start: [6,2],  end: [6,6] },
+  { name: '◆ 세금계산서 일괄 등록 Go-Live (패키지)', color:'fill-red', start: [6,9],  end: [6,9], milestone: true },
+
+  // ── Section F ──
+  { name: '트랙 F — 작업지시서 패키지 (부서 논의 후 결정)', section: true },
+  { name: '패키지 작업지시서 요건 논의 (부서별)',color: 'fill-amber',  start: [6,9],  end: [6,13] },
+  { name: '패키지 작업지시서 개발 (논의 결과 반영)', color: 'fill-amber', start: [6,16], end: [6,25] },
+  { name: '◆ 작업지시서 전환 여부 확정 (패키지)', color:'fill-red',    start: [6,27], end: [6,27], milestone: true },
+];
+
+// ═══ Build table ═══
+const table = document.getElementById('gantt');
+
+// ── Header row 1: week groups ──
+const weeks = [];
+let weekStart = null;
+dates.forEach((d, i) => {
+  const mon = d.getDay() === 1 || i === 0;
+  if (mon) weekStart = i;
+  if (d.getDay() === 5 || d.getDay() === 0 || i === dates.length - 1) {
+    // close week on Friday or last day
+    if (weekStart !== null) {
+      const ws = dates[weekStart];
+      weeks.push({ start: weekStart, end: i, label: `${ws.getMonth()+1}/${ws.getDate()}~` });
+    }
+  }
+});
+
+// Simpler: month row
+const months = {};
+dates.forEach((d, i) => {
+  const key = `${d.getFullYear()}년 ${d.getMonth()+1}월`;
+  if (!months[key]) months[key] = { start: i, count: 0 };
+  months[key].count++;
+});
+
+let thead = '<thead>';
+
+// Month row
+thead += '<tr>';
+thead += '<th class="corner" rowspan="2">공정 단계</th>';
+Object.entries(months).forEach(([label, {count}]) => {
+  thead += `<th colspan="${count}" style="font-size:12px;">${label}</th>`;
+});
+thead += '</tr>';
+
+// Day row
+thead += '<tr class="day-row">';
+dates.forEach(d => {
+  const day = d.getDate();
+  const dow = d.getDay();
+  const isWeekend = dow === 0 || dow === 6;
+  const isToday = d.getTime() === TODAY.getTime();
+  let cls = '';
+  if (isToday) cls = 'today';
+  else if (isWeekend) cls = 'weekend';
+  const dayLabel = `${day}`;
+  const dowLabel = DAY_KR[dow];
+  thead += `<th class="${cls}" style="min-width:22px;"><div style="line-height:1.2">${dayLabel}<br><span style="font-size:9px;opacity:0.8">${dowLabel}</span></div></th>`;
+});
+thead += '</tr>';
+thead += '</thead>';
+
+// ── Body ──
+let tbody = '<tbody>';
+
+function dateIdx(m, d) {
+  const target = new Date(2026, m - 1, d);
+  for (let i = 0; i < dates.length; i++) {
+    if (dates[i].getFullYear() === target.getFullYear() &&
+        dates[i].getMonth() === target.getMonth() &&
+        dates[i].getDate() === target.getDate()) return i;
+  }
+  return -1;
+}
+
+tasks.forEach(task => {
+  tbody += '<tr>';
+  if (task.section) {
+    tbody += `<td class="task-name section">${task.name}</td>`;
+    dates.forEach(d => {
+      const dow = d.getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      tbody += `<td style="background:${isWeekend ? '#f1f5f9' : '#f8fafc'}; border-bottom:2px solid #cbd5e1;"></td>`;
+    });
+  } else {
+    const dispName = task.milestone ? task.name : task.name;
+    tbody += `<td class="task-name">${dispName}</td>`;
+
+    const si = task.start ? dateIdx(task.start[0], task.start[1]) : -1;
+    const ei = task.end ? dateIdx(task.end[0], task.end[1]) : -1;
+
+    dates.forEach((d, i) => {
+      const dow = d.getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      const inRange = i >= si && i <= ei && si >= 0;
+
+      if (task.milestone && inRange) {
+        tbody += `<td class="bar milestone"></td>`;
+      } else if (inRange) {
+        // Determine border radius for first/last
+        let radius = '';
+        if (i === si && i === ei) radius = 'border-radius:4px;';
+        else if (i === si) radius = 'border-radius:4px 0 0 4px;';
+        else if (i === ei) radius = 'border-radius:0 4px 4px 0;';
+        tbody += `<td class="bar"><div style="position:absolute;inset:4px 1px;${radius}" class="${task.color}"></div></td>`;
+      } else {
+        tbody += `<td class="${isWeekend ? 'weekend' : ''}"></td>`;
+      }
+    });
+  }
+  tbody += '</tr>';
+});
+
+tbody += '</tbody>';
+table.innerHTML = thead + tbody;
+</script>
+
+</body>
+</html>
